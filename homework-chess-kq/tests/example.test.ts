@@ -28,4 +28,14 @@ describe('test king movement', () => {
         expect(king.canMoveTo(position)).toBe(false)
     })
 
+    it('should move diagonally one space', () => {
+        let position = new Position('F', '2')
+        expect(king.canMoveTo(position)).toBe(true)
+    })
+
+    it('shouldnt move diagonally two spaces', () => {
+        let position = new Position('G', '3')
+        expect(king.canMoveTo(position)).toBe(false)
+    })
+
 });

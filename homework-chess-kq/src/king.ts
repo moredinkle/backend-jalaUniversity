@@ -7,13 +7,14 @@ export default class King extends Piece {
         let files = ['A','B','C','D','E','F','G','H']
         let ranks = ['1','2','3','4','5','6','7','8']
 
-        let currentFileIndex = files.indexOf(this.position.file)
-        let currentRankIndex = ranks.indexOf(this.position.rank)
-        let newFileIndex = files.indexOf(position.file)
-        let newRankIndex = ranks.indexOf(position.rank)
-
-        if(newRankIndex === currentRankIndex && Math.abs(newFileIndex - currentFileIndex) !== 1) return false
-        if(newFileIndex === currentFileIndex && Math.abs(newRankIndex - currentRankIndex) !== 1) return false
-        return true
+        let currentFileIndex = files.indexOf(this.position.getFile())
+        let currentRankIndex = ranks.indexOf(this.position.getRank())
+        let newFileIndex = files.indexOf(position.getFile())
+        let newRankIndex = ranks.indexOf(position.getRank())
+        if(newRankIndex === currentRankIndex && newFileIndex === currentFileIndex) return false
+        if(Math.abs(newFileIndex - currentFileIndex) <= 1 && Math.abs(newRankIndex - currentRankIndex) <= 1) return true
+        // if(newRankIndex === currentRankIndex && Math.abs(newFileIndex - currentFileIndex) !== 1) return false
+        // if(newFileIndex === currentFileIndex && Math.abs(newRankIndex - currentRankIndex) !== 1) return false
+        return false
     }
 }

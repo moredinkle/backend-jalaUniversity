@@ -7,10 +7,10 @@ export default class Queen extends Piece {
         let files = ['A','B','C','D','E','F','G','H']
         let ranks = ['1','2','3','4','5','6','7','8']
 
-        let currentFileIndex = files.indexOf(this.position.file)
-        let currentRankIndex = ranks.indexOf(this.position.rank)
-        let newFileIndex = files.indexOf(position.file)
-        let newRankIndex = ranks.indexOf(position.rank)
+        let currentFileIndex = files.indexOf(this.position.getFile())
+        let currentRankIndex = ranks.indexOf(this.position.getRank())
+        let newFileIndex = files.indexOf(position.getFile())
+        let newRankIndex = ranks.indexOf(position.getRank())
 
         let x = Math.abs(newFileIndex - currentFileIndex)
         let y = Math.abs(newRankIndex - currentRankIndex)
