@@ -33,7 +33,6 @@ export default class SnakeDataAccess implements ISnakeRepository {
   async update(snake: SnakeEntity) {
     const repository = AppDataSource.getRepository(SnakeEntity);
     let updated = await repository.save(snake);
-    console.log(`Snake with id:${updated.id} updated`);
   }
 
   async delete(id: number) {

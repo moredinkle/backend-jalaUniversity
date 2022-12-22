@@ -33,6 +33,13 @@ export default class PositionService {
     return await this.PositionRepository.readByOccupier(occupier);
   }
 
+  async updateAllByOccupier(oldO: string, newO: string) {
+    const old = stringToCellState(oldO);
+    const newOne = stringToCellState(newO);
+    return await this.PositionRepository.updateAllByOccupier(old, newOne);
+
+  }
+
   async createAllBoardPositions(size: number): Promise<void> {
     await this.clearBoard();
 

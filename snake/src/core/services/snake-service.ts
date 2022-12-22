@@ -79,12 +79,14 @@ export default class SnakeService {
     try {
       const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
       let snake = await this.read(snakeId);
+      if(!snake){
+        return false;
+      }
       let directionUpdated = await snakeNodeService.updateHeadDirection(direction, snake.snakeNodes[0]);
       if (directionUpdated) {
         return true;
-      } else {
-        return false;
       }
+      return false;
     } catch (error) {
       throw error;
     }

@@ -8,6 +8,7 @@ export class SnakeMapper {
     snake.id = raw.id;
     snake.size = raw.size;
     snake.active = raw.active;
+    snake.score = raw.score;
     snake.gameId = raw.gameId;
     return snake;
   }

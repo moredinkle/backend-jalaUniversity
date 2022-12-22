@@ -101,7 +101,7 @@ gameRouter.get("/game/update-board/:id", (req, res) => {
           .status(400)
           .json({
             message:
-              "Game finished. Snakes crashed or snake crashed into itself.",
+              "Game finished or not found",
           });
       }
     }

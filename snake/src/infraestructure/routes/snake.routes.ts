@@ -11,7 +11,7 @@ const snakeService = new SnakeService(
   container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess)
 );
 
-//revisar esto
+
 snakeRouter.get("/snake/:id", (req, res) => {
   try {
     async function readSnake() {
@@ -67,32 +67,21 @@ snakeRouter.post("/snake", (req, res, next) => {
 
 snakeRouter.patch("/snake-direction/:id", (req, res) => {
   try {
-    async function readPosition() {
+    async function patchSnake() {
       const { direction } = req.body;
-      if (
-        direction === "UP" ||
-        direction === "DOWN" ||
-        direction === "LEFT" ||
-        direction === "RIGHT"
-      ) {
+      if (direction === "UP" || direction === "DOWN" || direction === "LEFT" || direction === "RIGHT") {
         const id = +req.params.id;
         let result = await snakeService.updateHeadDirection(id, direction);
         if (result) {
-          res
-            .status(200)
-            .json({ message: "Snake direction modified successfully" });
+          res.status(200).json({ message: "Snake direction modified successfully" });
         } else {
           res.status(400).json({ message: "Snake id or movement incorrect" });
         }
       } else {
-        res
-          .status(400)
-          .json({
-            message: "Invalid direction. Only UP, DOWN, LEFT or RIGHT accepted",
-          });
+        res.status(400).json({message: "Invalid direction. Only UP, DOWN, LEFT or RIGHT accepted",});
       }
     }
-    readPosition();
+    patchSnake();
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -104,9 +93,7 @@ snakeRouter.delete("/snake/:id", (req, res) => {
       const id: number = +req.params.id;
       const deleteAffectedRows = await snakeService.delete(id);
       if (deleteAffectedRows > 0) {
-        res
-          .status(200)
-          .json({ message: `Snake with id:${id} deleted succesfully` });
+        res.status(200).json({ message: `Snake with id:${id} deleted succesfully` });
       } else {
         res.status(400).json({ data: "Snake not found" });
       }

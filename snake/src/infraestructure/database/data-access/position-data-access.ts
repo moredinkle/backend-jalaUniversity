@@ -49,6 +49,15 @@ export default class positionDataAccess implements IPositionRepository {
     await repository.update(position.id, { occupier: position.occupier });
   }
 
+  async updateAllByOccupier(old: CellState, newOne: CellState){
+    const repository = AppDataSource.getRepository(PositionEntity);
+    await repository.createQueryBuilder()
+    .update(PositionEntity)
+    .set({ occupier: newOne })
+    .where("occupier = :occupier", { occupier: old })
+    .execute()
+  }
+
   async delete(id: number) {
     const repository = AppDataSource.getRepository(PositionEntity);
     let deleted = await repository.delete({ id: id });

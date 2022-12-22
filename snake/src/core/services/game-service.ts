@@ -68,13 +68,16 @@ export default class GameService {
   async finish(gameId: number){
     const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
     let gameSnakes = await snakeService.readByGameId(gameId);
-    gameSnakes.map(async (it) => {
+    let finishedGameSnakes = await Promise.all(gameSnakes.map(async (it) => {
       it.active = false;
+      it.score = it.score * it.size;
       await snakeService.update(it);
-    });
+      return it;
+    }));
     let game = await this.GameRepository.read(gameId);
     game.state = "ENDED";
     await this.GameRepository.update(game);
+    // return finishedGameSnakes;
   }
 
 
@@ -137,11 +140,10 @@ export default class GameService {
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
 
     let game = await this.read(id);
-    if(game.state === "ENDED") {
+    if(!game || game.state === "ENDED") {
       return undefined
     }
     let activeSnakes = await snakeService.readActiveSnakes();
-    await this.updatePositionsState(game);
 
     await Promise.all(activeSnakes.map(async (it) => {
       let updatedSnake = await snakeService.updateSnakeHeadPosition(it, game.boardSize);
@@ -149,6 +151,9 @@ export default class GameService {
         await this.finish(game.id);
         return undefined;
       }
+      updatedSnake.score++;
+      await snakeService.update(updatedSnake);
+      await this.updatePositionsState(game);
       await this.putSnakeInBoard(updatedSnake);
     }));
 
@@ -163,10 +168,7 @@ export default class GameService {
 
   async updatePositionsState(game: Game) {
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
-    let snakeCells = await positionService.readByOccupier("SNAKE");
-    await Promise.all( snakeCells.map(async (it) => {
-      await positionService.updateCellState(it, "EMPTY");
-    }));
+    await positionService.updateAllByOccupier("SNAKE", "EMPTY");
   }
 
 

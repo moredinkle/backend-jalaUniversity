@@ -14,6 +14,9 @@ export default class SnakeEntity {
 
   @Column()
   active: boolean;
+  
+  @Column()
+  score: number;
 
   @Column()
   gameId: number;
