@@ -1,6 +1,6 @@
 import { CellState } from "../types/types";
 
-export function stringToCellState(str: string): CellState {
+export function stringToCellState(str: string): CellState | undefined {
   let res: CellState;
   if (str == "EMPTY") {
     res = "EMPTY";
@@ -13,5 +13,8 @@ export function stringToCellState(str: string): CellState {
   if (str == "SNAKE") {
     res = "SNAKE";
     return res;
+  }
+  else {
+    return undefined
   }
 }

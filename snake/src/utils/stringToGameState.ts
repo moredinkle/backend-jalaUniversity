@@ -1,6 +1,6 @@
 import { GameState } from "../types/types";
 
-export function stringToGameState(str: string): GameState {
+export function stringToGameState(str: string): GameState | undefined {
   let res: GameState;
   if (str == "READY TO PLAY") {
     res = "READY TO PLAY";
@@ -13,5 +13,8 @@ export function stringToGameState(str: string): GameState {
   if (str == "ENDED") {
     res = "ENDED";
     return res;
+  }
+  else {
+    return undefined
   }
 }

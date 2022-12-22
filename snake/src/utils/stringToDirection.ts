@@ -1,6 +1,6 @@
 import { Direction } from "../types/types";
 
-export function stringToDirection(str: string): Direction {
+export function stringToDirection(str: string): Direction | undefined {
   let res: Direction;
   if (str == "UP") {
     res = "UP";
@@ -17,5 +17,8 @@ export function stringToDirection(str: string): Direction {
   if (str == "LEFT") {
     res = "LEFT";
     return res;
+  }
+  else {
+    return undefined
   }
 }

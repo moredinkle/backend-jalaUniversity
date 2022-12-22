@@ -11,12 +11,4 @@ export class SnakeNodeMapper {
     return snakeNode;
   }
 
-  static toEntity(raw: SnakeNode): SnakeNodeEntity {
-    const snakeNode = new SnakeNodeEntity();
-    snakeNode.id = raw.id;
-    snakeNode.direction = raw.direction;
-    snakeNode.x = raw.x;
-    snakeNode.y = raw.y;
-    return snakeNode;
-  }
 }

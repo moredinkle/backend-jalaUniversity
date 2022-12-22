@@ -8,14 +8,4 @@ export class PositionMapper {
     position.occupier = raw.occupier;
     return position;
   }
-
-  static toEntity(raw: Position): PositionEntity {
-    const position = new PositionEntity();
-    position.x = raw.x;
-    position.y = raw.y;
-    position.id = raw.id;
-    // position.boardId = raw.boardId
-    position.occupier = raw.occupier;
-    return position;
-  }
 }

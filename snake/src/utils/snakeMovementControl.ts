@@ -4,7 +4,7 @@ import { Direction } from "../types/types";
 export default class SnakeMovementControl {
   leftBorderMovementControl(size: number, xPosition: number): number {
     const leftBorder = 0;
-    if (xPosition == leftBorder) {
+    if (xPosition <= leftBorder) {
       return size - 1;
     } else {
       return xPosition - 1;
@@ -12,7 +12,7 @@ export default class SnakeMovementControl {
   }
 
   rightBorderMovementControl(size: number, xPosition: number): number {
-    if (xPosition == size - 1) {
+    if (xPosition >= size - 1) {
       return 0;
     } else {
       return xPosition + 1;
@@ -20,7 +20,7 @@ export default class SnakeMovementControl {
   }
 
   upBorderMovementControl(size: number, yPosition: number): number {
-    if (yPosition == size - 1) {
+    if (yPosition >= size - 1) {
       return 0;
     } else {
       return yPosition + 1;
@@ -29,7 +29,7 @@ export default class SnakeMovementControl {
 
   downBorderMovementControl(size: number, yPosition: number): number {
     const downBorder = 0;
-    if (yPosition == downBorder) {
+    if (yPosition <= downBorder) {
       return size - 1;
     } else {
       return yPosition - 1;
