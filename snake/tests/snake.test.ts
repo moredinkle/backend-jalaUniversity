@@ -34,10 +34,14 @@ describe("Unit test for Snake service", () => {
     expect(typeof newSnakeId).toBe("number");
     expect(newSnakeId).toBeGreaterThan(0);
 
-    const snakePosition = await positionService.readOne(4719);
-    await positionService.updateAllByOccupier("SNAKE", "EMPTY");
-    await positionService.updateCellState(snakePosition, "SNAKE");
-    await snakeService.delete(newSnakeId);
+
+    const snakePositions = await positionService.readByOccupier("SNAKE");
+    if(snakePositions){
+        await positionService.updateAllByOccupier("SNAKE", "EMPTY");
+        await positionService.updateCellState(snakePositions[0], "SNAKE");
+        await snakeService.delete(newSnakeId);
+    }
+    
   });
 
 

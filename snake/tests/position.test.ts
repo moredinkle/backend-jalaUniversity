@@ -29,9 +29,8 @@ describe("Unit test for position service", () => {
 
 
   it("Should return one position with a specific id", async () => {
-    //!0,0 has id 4715
-    const validId = 4715;
-    const position = await positionService.readOne(validId);
+    const positionAtOrigin = await positionService.readByCoordenates(0,0);
+    const position = await positionService.readOne(positionAtOrigin.id);
 
     expect(position.x).toBe(0);
     expect(position.y).toBe(0);
@@ -54,9 +53,7 @@ describe("Unit test for position service", () => {
 
 
   it("Should return one position by coordenates", async () => {
-    //!currently position at (0,0) is 4715
     const position = await positionService.readByCoordenates(0,0);
-    expect(position.id).toBe(4715);
     expect(position.x).toBe(0);
     expect(position.y).toBe(0);
   });
