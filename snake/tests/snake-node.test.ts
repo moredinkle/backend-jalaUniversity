@@ -1,9 +1,9 @@
-import { container } from "../../src/infraestructure/container";
-import { AppDataSource } from "../../src/infraestructure/database/data-source";
-import SnakeNode from "../../src/core/entities/snake-node";
-import { ISnakeNodeRepository } from "../../src/core/repositories/snake-node-repository";
-import SnakeNodeService from '../../src/core/services/snake-node-service';
-import { SNAKE_NODE_TYPES } from "../../src/types/class-types";
+import { container } from "../src/infraestructure/container";
+import { AppDataSource } from "../src/infraestructure/database/data-source";
+import SnakeNode from "../src/core/entities/snake-node";
+import { ISnakeNodeRepository } from "../src/core/repositories/snake-node-repository";
+import SnakeNodeService from '../src/core/services/snake-node-service';
+import { SNAKE_NODE_TYPES } from "../src/types/class-types";
 
 jest.setTimeout(10000);
 

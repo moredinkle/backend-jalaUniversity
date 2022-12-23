@@ -1,9 +1,9 @@
-import { container } from "../../src/infraestructure/container";
-import { AppDataSource } from "../../src/infraestructure/database/data-source";
-import Position from "../../src/core/entities/position";
-import { IPositionRepository } from "../../src/core/repositories/position-repository";
-import PositionService from '../../src/core/services/position-service';
-import { POSITION_TYPES } from "../../src/types/class-types";
+import { container } from "../src/infraestructure/container";
+import { AppDataSource } from "../src/infraestructure/database/data-source";
+import Position from "../src/core/entities/position";
+import { IPositionRepository } from "../src/core/repositories/position-repository";
+import PositionService from '../src/core/services/position-service';
+import { POSITION_TYPES } from "../src/types/class-types";
 
 
 describe("Unit test for position service", () => {
