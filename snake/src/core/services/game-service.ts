@@ -162,7 +162,7 @@ export default class GameService {
   }
 
 
-  async updateBoardState(id: number): Promise<string[][] | undefined> {
+  async updateBoardState(id: number): Promise<Position[] | undefined> {
     const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
 

@@ -21,8 +21,12 @@ export default class PositionService {
     return await this.PositionRepository.readOne(id);
   }
 
-  async readAllPositions(): Promise<string[][]> {
+  async readAllPositions(): Promise<Position[]> {
     let board = await this.PositionRepository.readAllPositions();
+    return board;
+  }
+
+  graphicBoard(board: Position[]){
     let boardRow = [];
     let graphicBoard = [];
     let boardSize = Math.round(Math.sqrt(board.length));
