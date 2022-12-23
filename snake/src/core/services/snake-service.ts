@@ -14,9 +14,7 @@ import SnakeNode from "../entities/snake-node";
 export default class SnakeService {
   private SnakeRepository: ISnakeRepository;
 
-  constructor(
-    @inject(SNAKE_TYPES.SnakeDataAccess) SnakeRepository: ISnakeRepository
-  ) {
+  constructor(@inject(SNAKE_TYPES.SnakeDataAccess) SnakeRepository: ISnakeRepository) {
     this.SnakeRepository = SnakeRepository;
   }
 
@@ -68,6 +66,11 @@ export default class SnakeService {
       return it;
     }));
     return gameSnakes;
+  }
+
+  async readLeaderboard(){
+    let snakes = await this.SnakeRepository.readLeaderboard();
+    return snakes.map(it => {return {username: it.username, score: it.score, gameId: it.gameId}})
   }
 
 

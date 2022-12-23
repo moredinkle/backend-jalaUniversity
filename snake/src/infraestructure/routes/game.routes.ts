@@ -28,22 +28,22 @@ gameRouter.get("/game/:id", (req, res) => {
   }
 });
 
-gameRouter.get("/game/start/:id", (req, res) => {
+gameRouter.post("/game/start", (req, res) => {
   try {
     async function startGame() {
-      const { username } = req.body;
-      const { id } = req.params;
+      const { id, username, timer } = req.body;
       const gameId = parseInt(id);
-      const game = await gameService.start(username, gameId);
+      const interval = parseInt(timer);
+      const game = await gameService.start(username, interval, gameId);
       if (game) {
         res.status(200).json({ message: "Game started", data: game });
       } else {
-        res.status(400).json({ message: "Cant start an already started game" });
+        res.status(400).json({ message: "Cant start an already running game" });
       }
     }
     startGame();
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Id and interval have to be numbers" });
   }
 });
 
@@ -53,14 +53,44 @@ gameRouter.get("/game/restart/:id", (req, res) => {
       const { id } = req.params;
       let gameId = parseInt(id);
       let newGameId = await gameService.restart(gameId);
-      res
-        .status(200)
-        .json({
+      res.status(200).json({
           message: "Game restarted. Use the new id to track the game.",
           newId: newGameId,
         });
     }
     startGame();
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+gameRouter.get("/game/finish/:id", (req, res) => {
+  try {
+    async function finishGame() {
+      const { id } = req.params;
+      let gameId = parseInt(id);
+      await gameService.finish(gameId);
+      res.status(200).json({ message: "Game finished" });
+    }
+    finishGame();
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+gameRouter.get("/game/update-board/:id", (req, res) => {
+  try {
+    async function updateBoard() {
+      const id = +req.params.id;
+      const board = await gameService.updateBoardState(id);
+      if (board) {
+        res.status(200).json({ message: "Game state modified successfully", data: board });
+      } else {
+        res.status(400).json({message: "Game finished or not found",});
+      }
+    }
+    updateBoard();
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -73,13 +103,10 @@ gameRouter.post("/game", (req, res, next) => {
       const game = new Game(size);
       game.boardSize = size;
       const newGameId = await gameService.create(game);
-      res
-        .status(200)
-        .json({
-          message:
-            "Game created successfully. Use the game id to start the game.",
-          newGameId: newGameId,
-        });
+      res.status(200).json({
+        message: "Game created successfully. Use the game id to start the game.",
+        newGameId: newGameId,
+      });
     }
     createGame();
   } catch (error) {
@@ -87,29 +114,22 @@ gameRouter.post("/game", (req, res, next) => {
   }
 });
 
-gameRouter.get("/game/update-board/:id", (req, res) => {
+gameRouter.post("/game/new-snake", (req, res, next) => {
   try {
-    async function updateBoard() {
-      const id = +req.params.id;
-      const board = await gameService.updateBoardState(id);
-      if (board) {
-        res
-          .status(200)
-          .json({ message: "Game state modified successfully", data: board });
-      } else {
-        res
-          .status(400)
-          .json({
-            message:
-              "Game finished or not found",
-          });
-      }
+    async function createGame() {
+      const { username } = req.body;
+      let newSnakeId = await gameService.addSnakeToGame(username);
+      res.status(200).json({
+        message: "Snake added successfully",
+        newSnakeId: newSnakeId,
+      });
     }
-    updateBoard();
+    createGame();
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 gameRouter.delete("/game/:id", (req, res) => {
   try {

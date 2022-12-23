@@ -46,6 +46,19 @@ snakeRouter.get("/game/snakes/:id", (req, res) => {
   }
 });
 
+snakeRouter.get("/leaderboard", (req, res) => {
+  try {
+    async function readSnake() {
+      const snakes = await snakeService.readLeaderboard();
+      res.status(200).json({ data: snakes });
+    }
+    readSnake();
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 snakeRouter.post("/snake", (req, res, next) => {
   try {
     async function createSnake() {
@@ -64,6 +77,7 @@ snakeRouter.post("/snake", (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 snakeRouter.patch("/snake-direction/:id", (req, res) => {
   try {
@@ -86,6 +100,7 @@ snakeRouter.patch("/snake-direction/:id", (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
 
 snakeRouter.delete("/snake/:id", (req, res) => {
   try {

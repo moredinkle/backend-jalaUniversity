@@ -7,9 +7,7 @@ import { POSITION_TYPES } from "../../types/class-types";
 import Position from "../../core/entities/Position";
 
 export const positionRouter = Router();
-const positionService = new PositionService(
-  container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess)
-);
+const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
 
 //get una posicion por id
 positionRouter.get("/position/:id", (req, res) => {
@@ -17,6 +15,7 @@ positionRouter.get("/position/:id", (req, res) => {
     async function readPosition() {
       const id: number = +req.params.id;
       const position = await positionService.readOne(id);
+
       if (position) {
         res.status(200).json({ data: position });
       } else {
@@ -29,25 +28,23 @@ positionRouter.get("/position/:id", (req, res) => {
   }
 });
 
-positionRouter.get("/position/one", (req, res) => {
+positionRouter.get("/positions/food", (req, res) => {
   try {
-    async function readPosition() {
-      const x = +req.body.x;
-      const y = +req.body.x;
-      const position = await positionService.readByCoordenates(x, y);
+    async function readFoodPosition() {
+      const position = await positionService.readByOccupier("FOOD");
       if (position) {
         res.status(200).json({ data: position });
       } else {
-        res.status(400).json({ message: "Position not found" });
+        res.status(400).json({ message: "How ?" });
       }
     }
-    readPosition();
+    readFoodPosition();
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-//get todas las posiciones
+
 positionRouter.get("/positions", (req, res) => {
   try {
     async function readPosition() {
@@ -64,8 +61,8 @@ positionRouter.get("/positions", (req, res) => {
   }
 });
 
-//crear una posicion
-positionRouter.post("/position", (req, res) => {
+
+positionRouter.post("/positions", (req, res) => {
   try {
     async function createPosition() {
       const position = new Position(+req.body.x, +req.body.y);
@@ -81,7 +78,7 @@ positionRouter.post("/position", (req, res) => {
   }
 });
 
-//crear todas las posiciones de un tablero
+
 positionRouter.post("/board/positions", (req, res) => {
   try {
     async function createPositions() {

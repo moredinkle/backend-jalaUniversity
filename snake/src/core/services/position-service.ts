@@ -21,8 +21,31 @@ export default class PositionService {
     return await this.PositionRepository.readOne(id);
   }
 
-  async readAllPositions(): Promise<Position[]> {
-    return await this.PositionRepository.readAllPositions();
+  async readAllPositions(): Promise<string[][]> {
+    let board = await this.PositionRepository.readAllPositions();
+    let boardRow = [];
+    let graphicBoard = [];
+    let boardSize = Math.round(Math.sqrt(board.length));
+    let rowCount = boardSize-1;
+
+    for (let i = 0; i < board.length; i++) {
+      const position = board[i];
+      if(position.occupier == "EMPTY"){
+        boardRow.push("_");
+      }
+      else if(position.occupier == "SNAKE"){
+        boardRow.push("o");
+      }
+      else{
+        boardRow.push("w")
+      }
+      if(i === rowCount){
+        graphicBoard.push(boardRow.slice());
+        boardRow.splice(0);
+        rowCount+=boardSize;
+      }
+    }
+    return graphicBoard;
   }
 
   async readByCoordenates(x: number, y: number): Promise<Position> {

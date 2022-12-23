@@ -12,6 +12,7 @@ import Game from "../entities/Game";
 import { stringToGameState } from "../../utils/stringToGameState";
 import Snake from "../entities/snake";
 import Position from "../entities/position";
+import { setIntervalTime, stopInterval } from "../../utils/timer";
 
 @injectable()
 export default class GameService {
@@ -27,23 +28,31 @@ export default class GameService {
     return newGameId;
   }
 
+  async stopRunningGames(){
+    let activeGames = await this.GameRepository.readActiveGames();
+    if (activeGames.length > 0) {
+      await Promise.all(activeGames.map(async (it) => {
+        it.state = "ENDED";
+        this.GameRepository.update(it);
+        this.finish(it.id);
+      }));
+    }
+  }
 
-  async start(username: string, gameId: number): Promise<Game | undefined>{
+
+  async start(username: string, timer: number, gameId: number): Promise<Game | undefined>{
     let game = await this.GameRepository.read(gameId);
     if(game.state !== "READY TO PLAY") {
       return undefined;
     }
+    game.timer = timer;
+    await this.GameRepository.update(game);
 
-    let activeGames = await this.GameRepository.readActiveGames();
-    if (activeGames.length > 0) {
-      activeGames.map(async (it) => {
-        it.state = "ENDED";
-        this.GameRepository.update(it);
-        this.finish(it.id);
-      });
-    }
+    await this.stopRunningGames();
+
     await this.startBoard(game);
     await this.startSnake(game, username);
+    setIntervalTime(timer, game.id);
     return game;
   }
 
@@ -53,14 +62,18 @@ export default class GameService {
     //primero leer juego por id para conseguir size y serpiente
     const oldGame = await this.GameRepository.read(gameId);
     const newGame = new Game(oldGame.boardSize);
+    newGame.timer = oldGame.timer;
     const newId = await this.create(newGame);
     newGame.id = newId;
+
+    await this.stopRunningGames();
 
     let snakes = await snakeService.readByGameId(gameId);
     await this.startBoard(newGame);
     await Promise.all(snakes.map(async(it) => {
       await this.startSnake(newGame, it.username);
-    }))
+    }));
+    setIntervalTime(newGame.timer, newGame.id);
     return newGame.id;
   }
 
@@ -77,7 +90,7 @@ export default class GameService {
     let game = await this.GameRepository.read(gameId);
     game.state = "ENDED";
     await this.GameRepository.update(game);
-    // return finishedGameSnakes;
+    stopInterval();
   }
 
 
@@ -119,6 +132,19 @@ export default class GameService {
     }
   }
 
+  async addSnakeToGame(username: string): Promise<number> {
+    const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
+    let games = await this.GameRepository.readActiveGames();
+    if(games.length === 0 ){
+      return undefined;
+    }
+    let activeGame = games[0];
+    let newSnake = new Snake(username);
+    newSnake.gameId = activeGame.id;
+    const newSnakeId = await snakeService.create(newSnake, activeGame.boardSize);
+    return newSnakeId;
+  }
+
 
 
   async read(id: number): Promise<Game> {
@@ -135,7 +161,7 @@ export default class GameService {
   }
 
 
-  async updateBoardState(id: number): Promise<Position[] | undefined> {
+  async updateBoardState(id: number): Promise<string[][] | undefined> {
     const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
 
