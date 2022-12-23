@@ -113,6 +113,10 @@ export default class SnakeNodeService {
     return false;
   }
 
+  async checkHeadInOtherSnake(head: SnakeNode){
+    return await this.SnakeNodeRepository.checkSnakeNodePosition(head.x, head.y, head.snakeId);
+  }
+
   checkHeadDirectionChange(currentDirection: string, newDirection: string) {
     let verticalDirections = ["UP", "DOWN"];
     let horizontalDirections = ["LEFT", "RIGHT"];

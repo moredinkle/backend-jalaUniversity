@@ -30,6 +30,7 @@ export default class SnakeDataAccess implements ISnakeRepository {
     return gameSnakes.map((it) => SnakeMapper.toDomain(it));
   }
 
+
   async readLeaderboard(){
     const repository = AppDataSource.getRepository(SnakeEntity);
     let snakes = await repository.find({ order: { score: "DESC", } });

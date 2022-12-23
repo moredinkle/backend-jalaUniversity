@@ -11,6 +11,7 @@ export interface IPositionRepository {
   createAllBoardPositions(positions: Position[]): Promise<void>;
   updateCellState(position: Position): Promise<void>;
   updateAllByOccupier(old: CellState, newOne: CellState): Promise<void>;
+  update(position: Position): Promise<void>;
   delete(id: number): Promise<number>;
   clearBoard(): Promise<void>;
 }

@@ -99,6 +99,12 @@ export default class PositionService {
     return await this.PositionRepository.updateCellState(position);
   }
 
+  async update(x: number, y: number, occupier: string){
+    let position = new Position(x,y);
+    position.occupier = stringToCellState(occupier);
+    return await this.PositionRepository.update(position);
+  }
+
   async delete(id: number): Promise<number> {
     let deletedRows = await this.PositionRepository.delete(id);
     if (deletedRows !== 0) {

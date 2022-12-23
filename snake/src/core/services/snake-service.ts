@@ -9,6 +9,7 @@ import { container } from "../../infraestructure/container";
 import Snake from "../entities/snake";
 import { SNAKE_TYPES, SNAKE_NODE_TYPES, POSITION_TYPES } from "../../types/class-types";
 import SnakeNode from "../entities/snake-node";
+import Position from '../entities/position';
 
 @injectable()
 export default class SnakeService {
@@ -99,7 +100,7 @@ export default class SnakeService {
   async updateSnakeHeadPosition(snake: Snake, size: number): Promise<Snake | undefined> {
     const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
-    
+
     const headPreviousState = this.assignNode(snake.snakeNodes[0]);
     const lastNodePreviousState = this.assignNode(snake.snakeNodes[snake.size - 1]);
     const newHead = await snakeNodeService.updateHeadPosition(snake.snakeNodes[0],size);
@@ -110,11 +111,18 @@ export default class SnakeService {
     if(SnakeOnNewHeadPosition) {
       return undefined;
     }
+
+    let newHeadPosition = await positionService.readByCoordenates(newHead.x, newHead.y);
+    await positionService.updateCellState(newHeadPosition, "SNAKE");
+    
     if (FoodOnNewHeadPosition) {
       snake = await this.growSnake(snake, lastNodePreviousState);
-      const foodPosition = await positionService.readByCoordenates(newHead.x, newHead.y);
-      await positionService.updateCellState(foodPosition, "EMPTY");
     }
+    else {
+      let oldTailPosition = await positionService.readByCoordenates(lastNodePreviousState.x, lastNodePreviousState.y);
+      await positionService.updateCellState(oldTailPosition, "EMPTY");
+    }
+
     if (snake.size > 1) {
       await this.updateSnakeTailPosition(snake, headPreviousState);
     }
@@ -141,6 +149,11 @@ export default class SnakeService {
       await snakeNodeService.update(it);
       previousNode = this.assignNode(currentNode);
     }
+  }
+
+
+  checkHeadOnSnake(snakeNode: SnakeNode, snake: Snake){
+    
   }
 
 

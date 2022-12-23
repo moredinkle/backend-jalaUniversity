@@ -19,6 +19,12 @@ export default class SnakeNodeDataAccess implements ISnakeNodeRepository {
     return snakeNode ? SnakeNodeMapper.toDomain(snakeNode) : undefined;
   }
 
+  async checkSnakeNodePosition(x: number, y: number, snakeId: number){
+    const repository = AppDataSource.getRepository(SnakeNodeEntity);
+    let snakeNode = await repository.findOneBy({ x: x, y: y, snakeId: snakeId });
+    return snakeNode ? snakeNode : undefined;
+  }
+
   async readBySnakeId(snakeId: number): Promise<SnakeNode[]> {
     const repository = AppDataSource.getRepository(SnakeNodeEntity);
     let snakeNodes = await repository.findBy({ snakeId: snakeId });

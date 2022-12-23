@@ -23,6 +23,9 @@ export default class GameService {
   }
 
   async create(game: Game): Promise<number> {
+    const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
+    await this.stopRunningGames();
+    await snakeService.setAllAsInactive();
     let newGameId = await this.GameRepository.create(game);
     game.id = newGameId;
     return newGameId;
@@ -48,7 +51,6 @@ export default class GameService {
     game.timer = timer;
     await this.GameRepository.update(game);
 
-    await this.stopRunningGames();
 
     await this.startBoard(game);
     await this.startSnake(game, username);
@@ -66,7 +68,6 @@ export default class GameService {
     const newId = await this.create(newGame);
     newGame.id = newId;
 
-    await this.stopRunningGames();
 
     let snakes = await snakeService.readByGameId(gameId);
     await this.startBoard(newGame);
@@ -81,7 +82,7 @@ export default class GameService {
   async finish(gameId: number){
     const snakeService = new SnakeService(container.get<ISnakeRepository>(SNAKE_TYPES.SnakeDataAccess));
     let gameSnakes = await snakeService.readByGameId(gameId);
-    let finishedGameSnakes = await Promise.all(gameSnakes.map(async (it) => {
+    await Promise.all(gameSnakes.map(async (it) => {
       it.active = false;
       it.score = it.score * it.size;
       await snakeService.update(it);
@@ -179,8 +180,6 @@ export default class GameService {
       }
       updatedSnake.score++;
       await snakeService.update(updatedSnake);
-      await this.updatePositionsState(game);
-      await this.putSnakeInBoard(updatedSnake);
     }));
 
     let foodCells = await positionService.readByOccupier("FOOD");
@@ -191,21 +190,6 @@ export default class GameService {
     return board;
   }
 
-
-  async updatePositionsState(game: Game) {
-    const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
-    await positionService.updateAllByOccupier("SNAKE", "EMPTY");
-  }
-
-
-  async putSnakeInBoard(snake: Snake){
-    const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
-    const nodes = snake.snakeNodes;
-    await Promise.all( nodes.map(async (it) => {
-      const position = await positionService.readByCoordenates(it.x, it.y);
-      await positionService.updateCellState(position, "SNAKE");
-    }));
-  }
 
 
   async delete(id: number): Promise<number> {
