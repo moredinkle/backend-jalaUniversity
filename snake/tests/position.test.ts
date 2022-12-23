@@ -29,8 +29,8 @@ describe("Unit test for position service", () => {
 
 
   it("Should return one position with a specific id", async () => {
-    //cant really think for something better in time
-    const validId = 1042;
+    //!0,0 has id 4715
+    const validId = 4715;
     const position = await positionService.readOne(validId);
 
     expect(position.x).toBe(0);
@@ -46,17 +46,17 @@ describe("Unit test for position service", () => {
 
 
   it("Should return all positions", async () => {
-    //currently 8*8 baord
+    //!currently 10*10 baord
     const positions = await positionService.readAllPositions();
 
-    expect(positions).toHaveLength(64);
+    expect(positions).toHaveLength(10);
   });
 
 
   it("Should return one position by coordenates", async () => {
-    //currently position at (0,0) is 1042
+    //!currently position at (0,0) is 4715
     const position = await positionService.readByCoordenates(0,0);
-    expect(position.id).toBe(1042);
+    expect(position.id).toBe(4715);
     expect(position.x).toBe(0);
     expect(position.y).toBe(0);
   });
@@ -69,28 +69,54 @@ describe("Unit test for position service", () => {
 
 
   it("Should return true for food in the given position", async () => {
-    //currently food on (2,2)
-    const foodOnPosition = await positionService.checkIfFoodOnNewPosition(2,2);
+    //putting food in a given position and then checking it
+    const foodPosition = await positionService.readByCoordenates(6,4);
+    const oldOccupier = foodPosition.occupier;
+    await positionService.updateCellState(foodPosition, "FOOD");
+    const foodOnPosition = await positionService.checkIfFoodOnNewPosition(6,4);
     expect(foodOnPosition).toBe(true);
+    await positionService.updateCellState(foodPosition, oldOccupier);
   });
 
 
   it("Should return false for food in the given position", async () => {
-    const foodOnPosition = await positionService.checkIfFoodOnNewPosition(3,4);
+    const foodPosition = await positionService.readByCoordenates(6,4);
+    const oldOccupier = foodPosition.occupier;
+    await positionService.updateCellState(foodPosition, "EMPTY");
+    const foodOnPosition = await positionService.checkIfFoodOnNewPosition(6,4);
     expect(foodOnPosition).toBe(false);
+    await positionService.updateCellState(foodPosition, oldOccupier);
   });
 
 
   it("Should return true for snake in the given position", async () => {
-    //currently food on (2,2)
-    const foodOnPosition = await positionService.checkSnakeOnNewPosition(4,6);
-    expect(foodOnPosition).toBe(true);
+    //putting snake in position to check and reverting back to old state
+    const snakePosition = await positionService.readByCoordenates(0,4);
+    const oldOccupier = snakePosition.occupier;
+    await positionService.updateCellState(snakePosition, "SNAKE");
+    const snakeOnPosition = await positionService.checkSnakeOnNewPosition(0,4);
+    expect(snakeOnPosition).toBe(true);
+    await positionService.updateCellState(snakePosition, oldOccupier);
   });
 
 
-  it("Should return false for food in the given position", async () => {
-    const foodOnPosition = await positionService.checkSnakeOnNewPosition(0,4);
-    expect(foodOnPosition).toBe(false);
+  it("Should return false for snake in the given position", async () => {
+    const snakePosition = await positionService.readByCoordenates(0,4);
+    const oldOccupier = snakePosition.occupier;
+    await positionService.updateCellState(snakePosition, "EMPTY");
+    const snakeOnPosition = await positionService.checkSnakeOnNewPosition(0,4);
+    expect(snakeOnPosition).toBe(false);
+    await positionService.updateCellState(snakePosition, oldOccupier);
+  });
+
+
+  it('Should update a created position and not throw error', async () => {
+    const newPositionId = await positionService.create(testPosition);
+    const position = await positionService.readOne(newPositionId);
+    
+    expect(positionService.updateCellState(position,"SNAKE")).resolves.not.toThrow();
+
+    await positionService.delete(newPositionId);
   });
 
 

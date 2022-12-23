@@ -9,7 +9,6 @@ import { container } from "../../infraestructure/container";
 import Snake from "../entities/snake";
 import { SNAKE_TYPES, SNAKE_NODE_TYPES, POSITION_TYPES } from "../../types/class-types";
 import SnakeNode from "../entities/snake-node";
-import Position from '../entities/position';
 
 @injectable()
 export default class SnakeService {
@@ -49,7 +48,7 @@ export default class SnakeService {
     return snake;
   }
 
-  async readActiveSnakes(): Promise<Snake[] | undefined> {
+  async readActiveSnakes(): Promise<Snake[]> {
     const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
     let activeSnakes = await this.SnakeRepository.readActiveSnakes();
     for (let i = 0; i < activeSnakes.length; i++) {
@@ -107,17 +106,14 @@ export default class SnakeService {
 
     let SnakeOnNewHeadPosition = await snakeNodeService.checkIfDead(newHead);
     let FoodOnNewHeadPosition = await snakeNodeService.checkFoodOnNewPosition(newHead);
-
-    if(SnakeOnNewHeadPosition) {
-      return undefined;
-    }
-
     let newHeadPosition = await positionService.readByCoordenates(newHead.x, newHead.y);
-    if(newHeadPosition.occupier == "SNAKE") {
+
+    if(SnakeOnNewHeadPosition || newHeadPosition.occupier == "SNAKE") {
       return undefined;
     }
     await positionService.updateCellState(newHeadPosition, "SNAKE");
-    
+
+
     if (FoodOnNewHeadPosition) {
       snake = await this.growSnake(snake, lastNodePreviousState);
     }
@@ -155,10 +151,6 @@ export default class SnakeService {
   }
 
 
-  checkHeadOnSnake(snakeNode: SnakeNode, snake: Snake){
-    
-  }
-
 
   async growSnake(snake: Snake, lastNodePreviousState: SnakeNode): Promise<Snake> {
     const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
@@ -174,10 +166,10 @@ export default class SnakeService {
 
   async setAllAsInactive() {
     let snakes = await this.SnakeRepository.readActiveSnakes();
-    snakes.map(async (it) => {
+    await Promise.all(snakes.map(async (it) => {
       it.active = false;
       await this.SnakeRepository.update(it);
-    });
+    }));
   }
 
   async delete(id: number): Promise<number> {

@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "npx ts-node src/app.ts",
-    "test": "jest --coverage",
+    "test": "jest --coverage -i",
     "lint-and-fix": "eslint . --ext .ts --fix",
     "lint": "eslint . --ext .ts"
   },

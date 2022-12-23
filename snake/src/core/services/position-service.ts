@@ -95,15 +95,14 @@ export default class PositionService {
   }
 
   async updateCellState(position: Position, newOccupier: string): Promise<void> {
-    position.occupier = stringToCellState(newOccupier);
-    return await this.PositionRepository.updateCellState(position);
+    try {
+      position.occupier = stringToCellState(newOccupier);
+      return await this.PositionRepository.updateCellState(position);
+    } catch (error) {
+      throw new Error('could not update cell occupier');
+    }
   }
 
-  async update(x: number, y: number, occupier: string){
-    let position = new Position(x,y);
-    position.occupier = stringToCellState(occupier);
-    return await this.PositionRepository.update(position);
-  }
 
   async delete(id: number): Promise<number> {
     let deletedRows = await this.PositionRepository.delete(id);
