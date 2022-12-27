@@ -108,11 +108,7 @@ export default class SnakeService {
     let FoodOnNewHeadPosition = await snakeNodeService.checkFoodOnNewPosition(newHead);
     let newHeadPosition = await positionService.readByCoordenates(newHead.x, newHead.y);
 
-    if(SnakeOnNewHeadPosition) {
-      return undefined;
-    }
-
-    if(newHeadPosition.occupier == "SNAKE"){
+    if(SnakeOnNewHeadPosition || newHeadPosition.occupier == "SNAKE") {
       return undefined;
     }
     await positionService.updateCellState(newHeadPosition, "SNAKE");
