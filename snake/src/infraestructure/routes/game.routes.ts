@@ -14,7 +14,7 @@ const gameService = new GameService(
 gameRouter.get("/game/:id", (req, res) => {
   try {
     async function readGame() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const game = await gameService.read(id);
       if (game) {
         res.status(200).json({ message: "Game found", data: game });
@@ -32,7 +32,7 @@ gameRouter.post("/game/start", (req, res) => {
   try {
     async function startGame() {
       const { id, username, timer } = req.body;
-      const gameId = parseInt(id);
+      const gameId: string = id;
       const interval = parseInt(timer);
       const game = await gameService.start(username, interval, gameId);
       if (game) {
@@ -51,11 +51,11 @@ gameRouter.get("/game/restart/:id", (req, res) => {
   try {
     async function startGame() {
       const { id } = req.params;
-      let gameId = parseInt(id);
-      let newGameId = await gameService.restart(gameId);
+      let gameId: string = id;
+      // let newGameId = await gameService.restart(gameId);
       res.status(200).json({
           message: "Game restarted. Use the new id to track the game.",
-          newId: newGameId,
+          // newId: newGameId,
         });
     }
     startGame();
@@ -68,8 +68,8 @@ gameRouter.get("/game/finish/:id", (req, res) => {
   try {
     async function finishGame() {
       const { id } = req.params;
-      let gameId = parseInt(id);
-      await gameService.finish(gameId);
+      let gameId: string = id;
+      // await gameService.finish(gameId);
       res.status(200).json({ message: "Game finished" });
     }
     finishGame();
@@ -82,7 +82,7 @@ gameRouter.get("/game/finish/:id", (req, res) => {
 gameRouter.get("/game/update-board/:id", (req, res) => {
   try {
     async function updateBoard() {
-      const id = +req.params.id;
+      const id: string = req.params.id;
       const board = await gameService.updateBoardState(id);
       if (board) {
         res.status(200).json({ message: "Game state modified successfully", data: board });
@@ -134,7 +134,7 @@ gameRouter.post("/game/new-snake", (req, res, next) => {
 gameRouter.delete("/game/:id", (req, res) => {
   try {
     async function deleteGame() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const deleteAffectedRows = await gameService.delete(id);
       if (deleteAffectedRows > 0) {
         res

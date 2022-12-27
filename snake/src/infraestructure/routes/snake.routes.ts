@@ -15,7 +15,7 @@ const snakeService = new SnakeService(
 snakeRouter.get("/snake/:id", (req, res) => {
   try {
     async function readSnake() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const snake = await snakeService.read(id);
       if (snake) {
         res.status(200).json({ message: "Snake found", data: snake });
@@ -32,7 +32,7 @@ snakeRouter.get("/snake/:id", (req, res) => {
 snakeRouter.get("/game/snakes/:id", (req, res) => {
   try {
     async function readSnake() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const snakes = await snakeService.readByGameId(id);
       if (snakes.length > 0) {
         res.status(200).json({ message: "Snake found", data: snakes });
@@ -84,7 +84,7 @@ snakeRouter.patch("/snake-direction/:id", (req, res) => {
     async function patchSnake() {
       const { direction } = req.body;
       if (direction === "UP" || direction === "DOWN" || direction === "LEFT" || direction === "RIGHT") {
-        const id = +req.params.id;
+        const id: string = req.params.id;
         let result = await snakeService.updateHeadDirection(id, direction);
         if (result) {
           res.status(200).json({ message: "Snake direction modified successfully" });
@@ -105,7 +105,7 @@ snakeRouter.patch("/snake-direction/:id", (req, res) => {
 snakeRouter.delete("/snake/:id", (req, res) => {
   try {
     async function deleteSnake() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const deleteAffectedRows = await snakeService.delete(id);
       if (deleteAffectedRows > 0) {
         res.status(200).json({ message: `Snake with id:${id} deleted succesfully` });

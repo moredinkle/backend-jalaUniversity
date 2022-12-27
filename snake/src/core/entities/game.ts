@@ -4,7 +4,7 @@ import Position from "./position";
 import Snake from "./snake";
 
 export default class Game {
-  id: number;
+  id: string;
   snakes: Snake[];
   state: GameState;
   board: Position[];

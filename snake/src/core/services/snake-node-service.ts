@@ -18,15 +18,15 @@ export default class SnakeNodeService {
       this.SnakeNodeRepository = SnakeNodeRepository;
     }
 
-  async create(snakeNode: SnakeNode): Promise<number> {
+  async create(snakeNode: SnakeNode): Promise<string> {
     return await this.SnakeNodeRepository.create(snakeNode);
   }
 
-  async createInRandomPosition(snakeNode: SnakeNode,size: number): Promise<number> {
+  async createInRandomPosition(snakeNode: SnakeNode,size: number): Promise<string> {
     const positionService = new PositionService(container.get<IPositionRepository>(POSITION_TYPES.PositionDataAccess));
     let random = generateRandomNumber(size);
     let validPosition = false;
-    let createdId: number;
+    let createdId: string;
     while(!validPosition) {
       const x = random.next().value;
       const y = random.next().value;
@@ -42,11 +42,11 @@ export default class SnakeNodeService {
     return createdId;
   }
 
-  async read(id: number): Promise<SnakeNode> {
+  async read(id: string): Promise<SnakeNode> {
     return await this.SnakeNodeRepository.read(id);
   }
 
-  async readBySnakeId(snakeId: number): Promise<SnakeNode[]> {
+  async readBySnakeId(snakeId: string): Promise<SnakeNode[]> {
     return await this.SnakeNodeRepository.readBySnakeId(snakeId);
   }
 
@@ -130,7 +130,7 @@ export default class SnakeNodeService {
     return true;
   }
 
-  async delete(id: number): Promise<number> {
+  async delete(id: string): Promise<number> {
     return await this.SnakeNodeRepository.delete(id);
   }
 }

@@ -1,7 +1,7 @@
 import { CellState } from "../../types/types";
 
 export default class Position {
-  id: number;
+  id: string;
   x: number;
   y: number;
   occupier: CellState;

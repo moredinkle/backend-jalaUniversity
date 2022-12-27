@@ -1,11 +1,11 @@
 import { Direction } from "../../types/types";
 
 export default class SnakeNode {
-  id: number;
+  id: string;
   x: number;
   y: number;
   direction: Direction;
-  snakeId: number;
+  snakeId: string;
 
   constructor(x = 0, y = 0) {
     this.direction = "RIGHT";

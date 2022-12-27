@@ -18,7 +18,7 @@ export default class SnakeService {
     this.SnakeRepository = SnakeRepository;
   }
 
-  async create(snake: Snake, size: number): Promise<number> {
+  async create(snake: Snake, size: number): Promise<string> {
     try {
       const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
       const newSnakeId = await this.SnakeRepository.create(snake);
@@ -31,7 +31,7 @@ export default class SnakeService {
     }
   }
 
-  async read(id: number): Promise<Snake> {
+  async read(id: string): Promise<Snake> {
     let snake = await this.SnakeRepository.read(id);
     if (snake) {
       snake = await this.readNodes(snake);
@@ -59,7 +59,7 @@ export default class SnakeService {
     return activeSnakes;
   }
 
-  async readByGameId(gameId: number): Promise<Snake[]>{
+  async readByGameId(gameId: string): Promise<Snake[]>{
     let snakes =  await this.SnakeRepository.readByGameId(gameId);
     let gameSnakes = await Promise.all(snakes.map(async (it) => {
       it = await this.readNodes(it);
@@ -78,7 +78,7 @@ export default class SnakeService {
     return await this.SnakeRepository.update(snake);
   }
 
-  async updateHeadDirection(snakeId: number, direction: string): Promise<boolean> {
+  async updateHeadDirection(snakeId: string, direction: string): Promise<boolean> {
     try {
       const snakeNodeService = new SnakeNodeService(container.get<ISnakeNodeRepository>(SNAKE_NODE_TYPES.SnakeNodeDataAccess));
       let snake = await this.read(snakeId);
@@ -172,7 +172,7 @@ export default class SnakeService {
     }));
   }
 
-  async delete(id: number): Promise<number> {
+  async delete(id: string): Promise<number> {
     let deletedSnakeId = await this.SnakeRepository.delete(id);
     if (deletedSnakeId !== 0) {
       console.log(`Snake with id:${id} deleted`);

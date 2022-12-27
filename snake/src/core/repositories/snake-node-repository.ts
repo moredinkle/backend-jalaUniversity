@@ -3,10 +3,10 @@ import { Direction } from "../../types/types";
 
 export interface ISnakeNodeRepository {
   //?
-  create(snakeNode: SnakeNode): Promise<number>;
-  read(id: number): Promise<SnakeNode | undefined>;
-  readBySnakeId(snakeId: number): Promise<SnakeNode[] | undefined>;
-  checkSnakeNodePosition(x: number, y: number, snakeId: number): Promise<SnakeNode>;
+  create(snakeNode: SnakeNode): Promise<string>;
+  read(id: string): Promise<SnakeNode | undefined>;
+  readBySnakeId(snakeId: string): Promise<SnakeNode[] | undefined>;
+  checkSnakeNodePosition(x: number, y: number, snakeId: string): Promise<SnakeNode>;
   update(snake: SnakeNode): Promise<void>;
-  delete(id: number): Promise<number>;
+  delete(id: string): Promise<number>;
 }

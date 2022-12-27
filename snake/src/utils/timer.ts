@@ -5,13 +5,13 @@ import { container } from '../infraestructure/container';
 
 let gameTimer: NodeJS.Timer | undefined
 
-export function setIntervalTime(interval: number, gameId: number){
+export function setIntervalTime(interval: number, gameId: string){
     const intervalInSeconds = interval*1000;
     gameTimer = setInterval(updateGame, intervalInSeconds, gameId);
 }
 
 
-async function updateGame(gameId: number){
+async function updateGame(gameId: string){
     const gameService = new GameService(container.get<IGameRepository>(GAME_TYPES.GameDataAccess));
     await gameService.updateBoardState(gameId);
     console.log("game updated");

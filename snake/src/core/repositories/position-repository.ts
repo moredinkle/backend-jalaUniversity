@@ -3,8 +3,8 @@ import { CellState } from '../../types/types';
 
 export interface IPositionRepository {
   //?
-  create(position: Position): Promise<number>;
-  readOne(id: number): Promise<Position | undefined>;
+  create(position: Position): Promise<string>;
+  readOne(id: string): Promise<Position | undefined>;
   readAllPositions(): Promise<Position[] | undefined>;
   readByCoordenates(x: number, y: number): Promise<Position | undefined>;
   readByOccupier(state: string): Promise<Position[] | undefined>;
@@ -12,6 +12,6 @@ export interface IPositionRepository {
   updateCellState(position: Position): Promise<void>;
   updateAllByOccupier(old: CellState, newOne: CellState): Promise<void>;
   update(position: Position): Promise<void>;
-  delete(id: number): Promise<number>;
+  delete(id: string): Promise<number>;
   clearBoard(): Promise<void>;
 }

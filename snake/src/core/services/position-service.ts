@@ -13,11 +13,11 @@ export default class PositionService {
     this.PositionRepository = PositionRepository;
   }
 
-  async create(Position: Position): Promise<number> {
+  async create(Position: Position): Promise<string> {
     return await this.PositionRepository.create(Position);
   }
 
-  async readOne(id: number): Promise<Position> {
+  async readOne(id: string): Promise<Position> {
     return await this.PositionRepository.readOne(id);
   }
 
@@ -104,7 +104,7 @@ export default class PositionService {
   }
 
 
-  async delete(id: number): Promise<number> {
+  async delete(id: string): Promise<number> {
     let deletedRows = await this.PositionRepository.delete(id);
     if (deletedRows !== 0) {
       console.log(`Position with id:${id} deleted`);

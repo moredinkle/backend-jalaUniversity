@@ -1,13 +1,13 @@
 import SnakeNode from "./snake-node";
 
 export default class Snake {
-  id: number;
+  id: string;
   username: string;
   size: number;
   active: boolean;
   snakeNodes: SnakeNode[];
   score: number
-  gameId: number;
+  gameId: string;
 
   constructor(username: string, size = 1, active = true) {
     this.username = username;
@@ -16,6 +16,6 @@ export default class Snake {
     this.active = active;
     this.score = 0;
     this.snakeNodes.push(new SnakeNode());
-    this.gameId = -1;
+    this.gameId = "";
   }
 }
