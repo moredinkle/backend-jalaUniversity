@@ -10,7 +10,6 @@ async function startServer() {
   const port = 3000;
 
   let a = await AppDataSource.initialize();
-  console.log(a.metadataTableName);
 
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());

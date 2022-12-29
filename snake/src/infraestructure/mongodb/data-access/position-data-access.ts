@@ -5,7 +5,7 @@ import { IPositionRepository } from "../../../core/repositories/Position-reposit
 import { PositionMapper } from "../entities/position/position-mapper";
 import Position from "../../../core/entities/position";
 import { CellState } from "../../../types/types";
-import { ObjectID } from 'typeorm';
+import { ObjectId } from 'mongodb';
 
 @injectable()
 export default class positionDataAccess implements IPositionRepository {
@@ -13,12 +13,12 @@ export default class positionDataAccess implements IPositionRepository {
     const repository = AppDataSource.getMongoRepository(PositionEntity);
     const dbPosition = PositionMapper.toEntity(position);
     await repository.save(dbPosition);
-    return dbPosition.id.toString();
+    return dbPosition._id.toString();
   }
 
   async readOne(id: string) {
     const repository = AppDataSource.getMongoRepository(PositionEntity);
-    let position = await repository.findOneBy({ id: id });
+    let position = await repository.findOneBy(id);
     return position ? PositionMapper.toDomain(position) : undefined;
   }
 
@@ -61,14 +61,12 @@ export default class positionDataAccess implements IPositionRepository {
 
   async update(position: Position){
     const repository = AppDataSource.getMongoRepository(PositionEntity);
-    const dbPosition = PositionMapper.toEntity(position);
-    await repository.update(dbPosition.id, { x: dbPosition.x, y: dbPosition.y, occupier: dbPosition.occupier });
+    await repository.update(position.id, { x: position.x, y: position.y, occupier: position.occupier });
   }
 
   async delete(id: string) {
     const repository = AppDataSource.getMongoRepository(PositionEntity);
-    const objectId = new ObjectID(id);
-    let deleted = await repository.delete({ id: objectId });
+    let deleted = await repository.delete(id);
     return deleted.affected;
   }
 

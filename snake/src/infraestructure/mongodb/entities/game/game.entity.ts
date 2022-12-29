@@ -1,10 +1,14 @@
-import { Entity, ObjectID, ObjectIdColumn, Column } from "typeorm"
+import { Entity, ObjectIdColumn, Column, PrimaryGeneratedColumn } from "typeorm"
+import { ObjectId } from 'mongodb';
 import { GameState } from "../../../../types/types";
 
 @Entity("Game")
 export default class GameEntity {
   @ObjectIdColumn()
-  id: ObjectID;
+  _id: ObjectId;
+
+  @PrimaryGeneratedColumn()
+  id: string;
 
   @Column()
   state: GameState;

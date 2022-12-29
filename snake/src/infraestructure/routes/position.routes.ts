@@ -13,7 +13,7 @@ const positionService = new PositionService(container.get<IPositionRepository>(P
 positionRouter.get("/position/:id", (req, res) => {
   try {
     async function readPosition() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const position = await positionService.readOne(id);
 
       if (position) {
@@ -97,7 +97,7 @@ positionRouter.post("/board/positions", (req, res) => {
 positionRouter.delete("/position/:id", (req, res) => {
   try {
     async function deletePosition() {
-      const id: number = +req.params.id;
+      const id: string = req.params.id;
       const deleted = await positionService.delete(id);
       if (deleted > 0) {
         res.status(200).json({

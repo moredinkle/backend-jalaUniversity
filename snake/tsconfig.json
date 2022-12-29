@@ -10,6 +10,7 @@
     "noImplicitAny": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "types": ["mongodb"],
   },
   "include": ["src"]
 }

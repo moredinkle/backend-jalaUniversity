@@ -4,7 +4,7 @@ import { injectable } from "inversify";
 import { ISnakeNodeRepository } from "../../../core/repositories/snake-node-repository";
 import { SnakeNodeMapper } from "../entities/snake-node/snake-node-mapper";
 import SnakeNode from "../../../core/entities/snake-node";
-import { ObjectID } from 'typeorm';
+import { ObjectId } from 'mongodb';
 
 @injectable()
 export default class SnakeNodeDataAccess implements ISnakeNodeRepository {
@@ -12,12 +12,12 @@ export default class SnakeNodeDataAccess implements ISnakeNodeRepository {
     const repository = AppDataSource.getMongoRepository(SnakeNodeEntity);
     const dbNode = SnakeNodeMapper.toEntity(snakeNode);
     await repository.save(dbNode);
-    return dbNode.id.toString();
+    return dbNode._id.toString();
   }
 
   async read(id: string) {
     const repository = AppDataSource.getMongoRepository(SnakeNodeEntity);
-    let snakeNode = await repository.findOneBy({ id: id });
+    let snakeNode = await repository.findOneBy(id);
     return snakeNode ? SnakeNodeMapper.toDomain(snakeNode) : undefined;
   }
 
@@ -36,13 +36,12 @@ export default class SnakeNodeDataAccess implements ISnakeNodeRepository {
   async update(snakeNode: SnakeNode): Promise<void> {
     const repository = AppDataSource.getMongoRepository(SnakeNodeEntity);
     const dbNode = SnakeNodeMapper.toEntity(snakeNode);
-    await repository.save(dbNode);
+    await repository.update(snakeNode.id, snakeNode);
   }
 
   async delete(id: string) {
     const repository = AppDataSource.getMongoRepository(SnakeNodeEntity);
-    const objectId = new ObjectID(id);
-    let deleted = await repository.delete({ id: objectId });
+    let deleted = await repository.delete(id);
     if (deleted.affected !== 0) console.log(`SnakeNode with id:${id} deleted`);
     return deleted.affected;
   }

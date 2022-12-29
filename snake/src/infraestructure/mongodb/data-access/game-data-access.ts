@@ -3,7 +3,7 @@ import GameEntity from "../entities/game/game.entity";
 import { injectable } from "inversify";
 import { IGameRepository } from "../../../core/repositories/Game-repository";
 import { GameMapper } from "../entities/game/game-mapper";
-import { ObjectID } from 'typeorm';
+import { ObjectId } from 'mongodb';
 import Game from '../../../core/entities/game';
 
 @injectable()
@@ -12,14 +12,15 @@ export default class GameDataAccess implements IGameRepository {
     const gameRepository = AppDataSource.getMongoRepository(GameEntity);
     const dbGame = GameMapper.toEntity(game);
     await gameRepository.save(dbGame);
-    return dbGame.id.toString();
+    return dbGame._id.toString();
   }
 
   async read(id: string) {
     const repository = AppDataSource.getMongoRepository(GameEntity);
-    let game = await repository.findOneBy({ id: id });
+    let game = await repository.findOneBy(id);
     return game ? GameMapper.toDomain(game) : undefined;
   }
+  //revisar todos los read
 
   async readActiveGames() {
     const repository = AppDataSource.getMongoRepository(GameEntity);
@@ -29,14 +30,12 @@ export default class GameDataAccess implements IGameRepository {
 
   async update(game: Game) {
     const repository = AppDataSource.getMongoRepository(GameEntity);
-    const dbGame = GameMapper.toEntity(game);
-    await repository.save(dbGame);
+    await repository.update(game.id, game);
   }
 
   async delete(id: string) {
     const repository = AppDataSource.getMongoRepository(GameEntity);
-    const objectId = new ObjectID(id);
-    let deleted = await repository.delete({ id: objectId });
+    let deleted = await repository.delete(id);
     return deleted.affected;
   }
 }
