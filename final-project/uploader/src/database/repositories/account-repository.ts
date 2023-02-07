@@ -5,7 +5,7 @@ import Account from '../../entities/account';
 export default class AccountRepository {
   async create(account: AccountEntity) {
     const accountRepository = AppDataSource.getMongoRepository(AccountEntity);
-    let a = await accountRepository.save(account);
+    await accountRepository.save(account);
     return account.id;
   }
 
