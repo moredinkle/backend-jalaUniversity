@@ -1,11 +1,13 @@
 import { Router } from "express";
-import AccountController from '../controllers/account.controller';
+import * as accountController from '../controllers/account.controller';
 
 const router = Router();
-const accountController = new AccountController();
 
-router.get("/:account-id", accountController.read);
+router.get("/", accountController.readAll);
+router.get("/:accountId", accountController.readOne);
 router.post("/", accountController.create);
+router.put("/:accountId", accountController.update);
+router.delete("/:accountId", accountController.deleteOne);
 
 
 export default router;

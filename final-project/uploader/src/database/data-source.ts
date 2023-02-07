@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import AccountEntity from './db-entities/account.entity';
 
 export const AppDataSource = new DataSource({
     type: "mongodb",
@@ -9,7 +10,7 @@ export const AppDataSource = new DataSource({
     useNewUrlParser: true,
     synchronize: true,
     logging: false,
-    entities: [],
+    entities: [AccountEntity],
     migrations: [],
     subscribers: [],
 });

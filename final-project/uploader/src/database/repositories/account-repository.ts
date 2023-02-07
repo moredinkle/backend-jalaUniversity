@@ -4,26 +4,45 @@ import Account from '../../entities/account';
 
 export default class AccountRepository {
   async create(account: AccountEntity) {
-    const accountRepository = AppDataSource.getRepository(AccountEntity);
-    const created = await accountRepository.insert(account);
-    return created.generatedMaps[0].id;
+    const accountRepository = AppDataSource.getMongoRepository(AccountEntity);
+    let a = await accountRepository.save(account);
+    return account.id;
   }
 
-  async read(id: string) {
-    const repository = AppDataSource.getRepository(AccountEntity);
-    let account = await repository.findOneBy({ dbId: id });
+  async readAll() {
+    const repository = AppDataSource.getMongoRepository(AccountEntity);
+    let accounts = await repository.find();
+    return accounts ? accounts.map((account) => account as Account) : undefined;
+  }
+
+  async readOne(id: string) {
+    const repository = AppDataSource.getMongoRepository(AccountEntity);
+    let account = await repository.findOneBy(id);
     return account ? account as Account : undefined;
   }
 
+  //TODO revisar que campos se podran modificar
   async update(account: AccountEntity) {
-    const repository = AppDataSource.getRepository(AccountEntity);
-    let updated = await repository.save(account);
-    return updated as Account;
+    const exisitingAccount = await this.readOne(account.id);
+    if(exisitingAccount) {
+      const repository = AppDataSource.getMongoRepository(AccountEntity);
+      const newValues = {
+        email: account.email,
+        client_id: account.client_id,
+        client_secret: account.client_secret,
+        redirect_uri: account.redirect_uri,
+        refresh_token: account.refresh_token
+      }
+      await repository.update(account.id, newValues);
+    }
+    else {
+      throw new Error("Account not found");
+    }
   }
 
-  async delete(id: string) {
-    const repository = AppDataSource.getRepository(AccountEntity);
-    let deleted = await repository.delete({ dbId: id });
+  async deleteOne(id: string) {
+    const repository = AppDataSource.getMongoRepository(AccountEntity);
+    let deleted = await repository.delete(id);
     return deleted.affected;
   }
 }
