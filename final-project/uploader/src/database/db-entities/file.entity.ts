@@ -16,5 +16,5 @@ export default class FileEntity {
     @Column()
     status: FileStatus;
     @Column()
-    driveId?: string;
+    driveIds?: string;
 }

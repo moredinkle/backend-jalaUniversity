@@ -1,26 +1,28 @@
 import "reflect-metadata";
 import FileRepository from "../database/repositories/file-repository";
 import File from "../entities/file";
-import { FileStatus } from '../utils/types';
-import AccountService from './account-service';
-import DriveService from './drive-service';
+import { FileStatus } from "../utils/types";
+import AccountService from "./account-service";
+import DriveService from "./drive-service";
 import Account from '../entities/account';
 
 export default class FileService {
-  private FileRepository: FileRepository;
+  private fileRepository: FileRepository;
   private accountService: AccountService;
 
   constructor() {
-    this.FileRepository = new FileRepository();
+    this.fileRepository = new FileRepository();
     this.accountService = new AccountService();
   }
 
-  async create(file: File): Promise<{newFileId: string, fileStatus: FileStatus}> {
+  async create(
+    file: File
+  ): Promise<{ newFileId: string; fileStatus: FileStatus }> {
     try {
-      const newFileId = await this.FileRepository.create(file);
+      const newFileId = await this.fileRepository.create(file);
       //TODO aqui va guardar en todas las cuentas de drive (rabbit)
       await this.setupDriveUpload(file);
-      const response = {newFileId: newFileId, fileStatus: file.status}
+      const response = { newFileId: newFileId, fileStatus: file.status };
       return response;
     } catch (error) {
       error.status = 500;
@@ -30,7 +32,7 @@ export default class FileService {
   }
 
   async readOne(FileId: string) {
-    let File = await this.FileRepository.readOne(FileId);
+    let File = await this.fileRepository.readOne(FileId);
     if (File) {
       return File;
     } else {
@@ -39,13 +41,13 @@ export default class FileService {
   }
 
   async readAll() {
-    let Files = await this.FileRepository.readAll();
+    let Files = await this.fileRepository.readAll();
     return Files;
   }
 
   async update(File: File) {
     try {
-      await this.FileRepository.update(File);
+      await this.fileRepository.update(File);
     } catch (error) {
       error.message === "File not found"
         ? (error.status = 400)
@@ -55,8 +57,10 @@ export default class FileService {
   }
 
   async deleteOne(id: string) {
-    let deletedRows = await this.FileRepository.deleteOne(id);
+    const file = await this.readOne(id);
+    const deletedRows = await this.fileRepository.deleteOne(id);
     //TODO aqui va eliminar de todas las cuentas de Drive (rabbit)
+    await this.setupDriveDelete(file);
     if (deletedRows !== 0) {
       console.log(`File with id:${id} deleted`);
     } else {
@@ -64,45 +68,45 @@ export default class FileService {
     }
   }
 
-  async setupDriveUpload(file: File){
+  async setupDriveUpload(file: File) {
     const accounts = await this.accountService.readAll();
-    accounts.map(async (acc) => {
-      await this.uploadToDrive(acc, file);
-    });
+    const fileDriveIds = [];
+    for (const account of accounts) {
+      const newDriveId = await this.uploadToDrive(account, file);
+      fileDriveIds.push(newDriveId);
+    }
+    file.driveIds = fileDriveIds.toString();
     file.status = "UPLOADED";
     await this.update(file);
     //TODO eliminar de gridFs
   }
-//? driveIds ????
-  async uploadToDrive(account: Account, file: File){
+  
+  async uploadToDrive(account: Account, file: File): Promise<string> {
     try {
       const driveService = new DriveService(account);
       const uploadResponse = await driveService.uploadFile(file);
-      // file.driveId = uploadResponse.id;
-      // await this.update(file); //*si se sube a varias cuentas no necesita driveId
+      return uploadResponse.id;
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
-  async setupDriveDelete(file: File){
+  async setupDriveDelete(file: File) {
+    const driveIds = file.driveIds.split(',');
     const accounts = await this.accountService.readAll();
-    accounts.map(async (acc) => {
-      await this.deleteFromDrive(acc, file);
+    driveIds.map(async (id, index) => {
+      await this.deleteFromDrive(id, accounts[index]);
     });
-    file.status = "UPLOADED";
-    await this.update(file);
     //TODO eliminar de gridFs
   }
 
-  async deleteFromDrive(account: Account, file: File){
+  async deleteFromDrive(driveId: string, account: Account) {
     try {
-      const driveService = new DriveService(account);
-      const uploadResponse = await driveService.uploadFile(file);
-      // file.driveId = uploadResponse.id;
-      // await this.update(file); //*si se sube a varias cuentas no necesita driveId
+      let driveService = new DriveService(account);
+      await driveService.deleteFile(driveId);
+      driveService = undefined;
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 }

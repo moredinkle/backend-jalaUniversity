@@ -43,12 +43,12 @@ export default class DriveService {
     }
   }
   
-  async  deleteFile(file: File) {
+  async  deleteFile(fileId: string) {
     try {
       const response = await this.drive.files.delete({
-        fileId: file.driveId,
+        fileId: fileId,
       });
-      console.log(response.data, response.status);
+      return response.status;
     } catch (error) {
       console.log(error.message);
     }

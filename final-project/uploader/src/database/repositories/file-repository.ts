@@ -30,7 +30,7 @@ export default class FileRepository {
         filename: file.filename,
         size: file.size,
         status: file.status,
-        driveId: file.driveId,
+        driveIds: file.driveIds,
       }
       await repository.update(file.id, newValues);
     }

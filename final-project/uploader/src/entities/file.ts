@@ -7,7 +7,7 @@ export default class File {
   size: number;
   mimetype: string;
   status: FileStatus;
-  driveId?: string;
+  driveIds?: string;
 
   constructor(
     filename: string,
@@ -16,7 +16,7 @@ export default class File {
     mimetype: string,
     status: FileStatus,
     id = "",
-    driveId = ""
+    driveIds = ""
   ) {
     this.id = id;
     this.filename = filename;
@@ -24,6 +24,6 @@ export default class File {
     this.size = size;
     this.mimetype = mimetype;
     this.status = status;
-    this.driveId = driveId;
+    this.driveIds = driveIds;
   }
 }
