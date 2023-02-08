@@ -4,7 +4,6 @@ import File from '../../entities/file';
 
 export default class FileRepository {
   async create(file: FileEntity) {
-    console.log(file);
     const fileRepository = AppDataSource.getMongoRepository(FileEntity);
     await fileRepository.save(file);
     return file.id;

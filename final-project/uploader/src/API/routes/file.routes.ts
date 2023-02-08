@@ -17,6 +17,9 @@ const upload = multer({ storage: storage });
 
 const router = Router();
 
+router.get("/", fileController.readAll);
+router.get("/:fileId", fileController.readOne);
 router.post("/", upload.single('file'), fileController.create);
+router.delete("/:fileId", fileController.deleteOne);
 
 export default router;
