@@ -1,8 +1,10 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import { AppDataSource } from './database/data-source';
 import bodyParser from "body-parser";
 import fileRoutes from './API/routes/file.routes';
 import accountRoutes from './API/routes/account.routes';
+import errorMiddleware from "./utils/error-middleware";
+
 
 async function startServer() {
   const app = express();
@@ -13,6 +15,7 @@ async function startServer() {
   app.use(bodyParser.json());
   app.use('/api/v1/accounts',accountRoutes);
   app.use('/api/v1/files',fileRoutes);
+  app.use(errorMiddleware);
 
   app.listen(port, () => console.log(`Server listening on port ${port}`));
 }

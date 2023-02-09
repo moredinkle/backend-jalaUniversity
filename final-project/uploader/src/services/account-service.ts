@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import AccountRepository from "../database/repositories/account-repository";
 import Account from "../entities/account";
+import HttpError from '../utils/http-error';
 
 export default class AccountService {
   private accountRepository: AccountRepository;
@@ -15,9 +16,7 @@ export default class AccountService {
       account.id = newAccountId;
       return newAccountId;
     } catch (error) {
-      error.status = 500;
-      error.message = "Could not create account";
-      throw error;
+      throw new HttpError(400, "Bad request");
     }
   }
 
@@ -26,7 +25,7 @@ export default class AccountService {
     if (account) {
       return account;
     } else {
-      throw new Error("Account not found");
+      throw new HttpError(404, "Account not found");
     }
   }
 
@@ -37,12 +36,15 @@ export default class AccountService {
 
   async update(account: Account) {
     try {
-      await this.accountRepository.update(account);
+      const exisitingAccount = await this.readOne(account.id);
+      if(exisitingAccount){
+        await this.accountRepository.update(account);
+      }
+      else {
+        throw new HttpError(404, "Account not found");
+      }
     } catch (error) {
-      error.message === "Account not found"
-        ? (error.status = 400)
-        : (error.status = 500);
-      throw error;
+      throw new HttpError(400, "Bad request");
     }
   }
   async deleteOne(id: string) {
@@ -50,7 +52,7 @@ export default class AccountService {
     if (deletedRows !== 0) {
       console.log(`Account with id:${id} deleted`);
     } else {
-      throw new Error("Account not found");
+      throw new HttpError(404, "Account not found");
     }
   }
 }

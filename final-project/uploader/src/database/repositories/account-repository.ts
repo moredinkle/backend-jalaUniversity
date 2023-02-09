@@ -1,6 +1,6 @@
 import { AppDataSource } from "../data-source";
 import AccountEntity from "../db-entities/account.entity";
-import Account from '../../entities/account';
+import Account from "../../entities/account";
 
 export default class AccountRepository {
   async create(account: AccountEntity) {
@@ -15,29 +15,23 @@ export default class AccountRepository {
     return accounts ? accounts.map((account) => account as Account) : undefined;
   }
 
-  async readOne(id: string) {
+  async readOne(id: string):Promise<Account | undefined> {
     const repository = AppDataSource.getMongoRepository(AccountEntity);
     let account = await repository.findOneBy(id);
-    return account ? account as Account : undefined;
+    return account ? (account as Account) : undefined;
   }
 
   //TODO revisar que campos se podran modificar
   async update(account: AccountEntity) {
-    const exisitingAccount = await this.readOne(account.id);
-    if(exisitingAccount) {
-      const repository = AppDataSource.getMongoRepository(AccountEntity);
-      const newValues = {
-        email: account.email,
-        client_id: account.client_id,
-        client_secret: account.client_secret,
-        redirect_uri: account.redirect_uri,
-        refresh_token: account.refresh_token
-      }
-      await repository.update(account.id, newValues);
-    }
-    else {
-      throw new Error("Account not found");
-    }
+    const repository = AppDataSource.getMongoRepository(AccountEntity);
+    const newValues = {
+      email: account.email,
+      client_id: account.client_id,
+      client_secret: account.client_secret,
+      redirect_uri: account.redirect_uri,
+      refresh_token: account.refresh_token,
+    };
+    await repository.update(account.id, newValues);
   }
 
   async deleteOne(id: string) {

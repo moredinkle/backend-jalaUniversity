@@ -5,6 +5,7 @@ import { FileStatus } from "../utils/types";
 import AccountService from "./account-service";
 import DriveService from "./drive-service";
 import Account from '../entities/account';
+import HttpError from '../utils/http-error';
 
 export default class FileService {
   private fileRepository: FileRepository;
@@ -25,9 +26,7 @@ export default class FileService {
       const response = { newFileId: newFileId, fileStatus: file.status };
       return response;
     } catch (error) {
-      error.status = 500;
-      error.message = "Could not create File";
-      throw error;
+      throw new HttpError(400, "Bad request");
     }
   }
 
@@ -36,7 +35,7 @@ export default class FileService {
     if (File) {
       return File;
     } else {
-      throw new Error("File not found");
+      throw new HttpError(404, "File not found");
     }
   }
 
@@ -45,14 +44,17 @@ export default class FileService {
     return Files;
   }
 
-  async update(File: File) {
+  async update(file: File) {
     try {
-      await this.fileRepository.update(File);
+      const existingFile = await this.readOne(file.id);
+      if(existingFile){
+        await this.fileRepository.update(file);
+      }
+      else {
+        throw new HttpError(404, "File not found");
+      }
     } catch (error) {
-      error.message === "File not found"
-        ? (error.status = 400)
-        : (error.status = 500);
-      throw error;
+      throw new HttpError(400, "Bad request");
     }
   }
 
@@ -64,7 +66,7 @@ export default class FileService {
     if (deletedRows !== 0) {
       console.log(`File with id:${id} deleted`);
     } else {
-      throw new Error("File not found");
+      throw new HttpError(404, "File not found");
     }
   }
 

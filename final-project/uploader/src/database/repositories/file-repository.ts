@@ -1,6 +1,6 @@
 import { AppDataSource } from "../data-source";
 import FileEntity from "../db-entities/file.entity";
-import File from '../../entities/file';
+import File from "../../entities/file";
 
 export default class FileRepository {
   async create(file: FileEntity) {
@@ -12,31 +12,25 @@ export default class FileRepository {
   async readAll() {
     const repository = AppDataSource.getMongoRepository(FileEntity);
     let files = await repository.find();
-    return files ? files.map((file) =>file as File) : undefined;
+    return files ? files.map((file) => file as File) : undefined;
   }
 
-  async readOne(id: string) {
+  async readOne(id: string): Promise<File | undefined> {
     const repository = AppDataSource.getMongoRepository(FileEntity);
     let file = await repository.findOneBy(id);
-    return file ? file as File : undefined;
+    return file ? (file as File) : undefined;
   }
 
   //TODO revisar que campos se podran modificar
   async update(file: FileEntity) {
-    const exisitingFile = await this.readOne(file.id);
-    if(exisitingFile) {
-      const repository = AppDataSource.getMongoRepository(FileEntity);
-      const newValues = {
-        filename: file.filename,
-        size: file.size,
-        status: file.status,
-        driveIds: file.driveIds,
-      }
-      await repository.update(file.id, newValues);
-    }
-    else {
-      throw new Error("File not found");
-    }
+    const repository = AppDataSource.getMongoRepository(FileEntity);
+    const newValues = {
+      filename: file.filename,
+      size: file.size,
+      status: file.status,
+      driveIds: file.driveIds,
+    };
+    await repository.update(file.id, newValues);
   }
 
   async deleteOne(id: string) {

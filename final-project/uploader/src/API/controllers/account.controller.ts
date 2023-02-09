@@ -1,12 +1,16 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import Account from "../../entities/account";
 import AccountService from "../../services/account-service";
+import HttpError from "../../utils/http-error";
 
 const accountService = new AccountService();
 
-export async function create(req: Request, res: Response) {
+export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, client_id, client_secret, redirect_uri, refresh_token } = req.body;
+    if(!email || !client_id || !client_secret || !redirect_uri || !refresh_token) {
+      throw new HttpError(400, "Bad request");
+    }
     const account = new Account(
       "",
       email,
@@ -21,12 +25,16 @@ export async function create(req: Request, res: Response) {
       newAccountId: newAccountId,
     });
   } catch (error) {
-    res.status(error.status);
-    res.send(error.message);
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
   }
 }
 
-export async function readOne(req: Request, res: Response) {
+export async function readOne(req: Request, res: Response, next: NextFunction) {
   try {
     const { accountId } = req.params;
     const account = await accountService.readOne(accountId);
@@ -35,13 +43,16 @@ export async function readOne(req: Request, res: Response) {
       data: account,
     });
   } catch (error) {
-    error.message === "Account not found" ? error.status = 400 : error.status = 500;
-    res.status(error.status);
-    res.send(error.message);
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
   }
 }
 
-export async function readAll(req: Request, res: Response) {
+export async function readAll(req: Request, res: Response, next: NextFunction) {
   try {
     const accounts = await accountService.readAll();
     res.status(200).json({
@@ -49,12 +60,16 @@ export async function readAll(req: Request, res: Response) {
       data: accounts,
     });
   } catch (error) {
-    res.status(500);
-    res.send(error.message);
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { accountId } = req.params;
     const { email, client_id, client_secret, redirect_uri, refresh_token } = req.body;
@@ -71,21 +86,28 @@ export async function update(req: Request, res: Response) {
       message: "Account updated successfully",
     });
   } catch (error) {
-    res.status(error.status);
-    res.send(error.message);
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
   }
 }
 
-export async function deleteOne(req: Request, res: Response) {
+export async function deleteOne(req: Request, res: Response, next: NextFunction) {
   try {
     const { accountId } = req.params;
     await accountService.deleteOne(accountId);
-    res.status(200).json({
+    res.status(204).json({
       message: "Account deleted",
     });
   } catch (error) {
-    error.message === "Account not found" ? error.status = 400 : error.status = 500;
-    res.status(error.status);
-    res.send(error.message);
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
   }
 }
