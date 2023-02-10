@@ -6,14 +6,17 @@ import AccountService from "./account-service";
 import DriveService from "./drive-service";
 import Account from '../entities/account';
 import HttpError from '../utils/http-error';
+import MqService from './rabbitmq-service';
 
 export default class FileService {
   private fileRepository: FileRepository;
   private accountService: AccountService;
-
+  private mqService: MqService;
+  
   constructor() {
     this.fileRepository = new FileRepository();
     this.accountService = new AccountService();
+    this.mqService = new MqService();
   }
 
   async create(
@@ -22,26 +25,27 @@ export default class FileService {
     try {
       const newFileId = await this.fileRepository.create(file);
       //TODO aqui va guardar en todas las cuentas de drive (rabbit)
-      await this.setupDriveUpload(file);
+      //enviar el mensaje a rabiit
+      this.mqService.publishMessage("UPLOADS", "START DRIVE UPLOAD");
       const response = { newFileId: newFileId, fileStatus: file.status };
       return response;
     } catch (error) {
-      throw new HttpError(400, "Bad request");
+      throw new HttpError(400, error.message);
     }
   }
 
   async readOne(FileId: string) {
-    let File = await this.fileRepository.readOne(FileId);
-    if (File) {
-      return File;
+    let file = await this.fileRepository.readOne(FileId);
+    if (file) {
+      return file;
     } else {
       throw new HttpError(404, "File not found");
     }
   }
 
   async readAll() {
-    let Files = await this.fileRepository.readAll();
-    return Files;
+    let files = await this.fileRepository.readAll();
+    return files;
   }
 
   async update(file: File) {
@@ -80,7 +84,7 @@ export default class FileService {
     file.driveIds = fileDriveIds.toString();
     file.status = "UPLOADED";
     await this.update(file);
-    //TODO eliminar de gridFs
+    //mensaje a downloader 
   }
   
   async uploadToDrive(account: Account, file: File): Promise<string> {
@@ -110,5 +114,9 @@ export default class FileService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async listenMessages(){
+    this.mqService.consumeMessage
   }
 }

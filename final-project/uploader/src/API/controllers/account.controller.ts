@@ -73,6 +73,9 @@ export async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { accountId } = req.params;
     const { email, client_id, client_secret, redirect_uri, refresh_token } = req.body;
+    if(!accountId || !email || !client_id || !client_secret || !redirect_uri || !refresh_token) {
+      throw new HttpError(400, "Bad request");
+    }
     const account = new Account(
       accountId,
       email,
