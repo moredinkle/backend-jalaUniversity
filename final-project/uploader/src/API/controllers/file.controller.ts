@@ -19,7 +19,6 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         mimetype,
         "REPLICATING"
     );
-    console.log(file);
     const newFileData = await fileService.create(file);
     res.status(201).json({
       message: "File saved successfully",

@@ -3,7 +3,7 @@ import { OAuth2Client } from "google-auth-library";
 import path from "path";
 import Account from "../entities/account";
 import File from "../entities/file";
-const fs = require("fs");
+import fs from 'fs';
 
 export default class DriveService {
   private oauth2Client: OAuth2Client;
@@ -26,7 +26,7 @@ export default class DriveService {
 
   async uploadFile(file: File) {
     try {
-      const filePath = path.join(__dirname, '..', '..',  `uploads/${file.filename}`);
+      const filePath = path.join(__dirname, `../../uploads/${file.filename}`);
       const response = await this.drive.files.create({
         requestBody: {
           name: file.filename,
@@ -49,6 +49,31 @@ export default class DriveService {
         fileId: fileId,
       });
       return response.status;
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  async generatePublicUrl(fileId: string) {
+    try {
+      await this.drive.permissions.create({
+        fileId: fileId,
+        requestBody: {
+          role: 'reader',
+          type: 'anyone',
+        },
+      });
+  
+      /* 
+      webViewLink: View the file in browser
+      webContentLink: Direct download link 
+      */
+      const result = await this.drive.files.get({
+        fileId: fileId,
+        fields: 'webViewLink, webContentLink',
+      });
+      console.log(result.data);
+      return result.data;
     } catch (error) {
       console.log(error.message);
     }

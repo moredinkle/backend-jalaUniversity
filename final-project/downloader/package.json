@@ -16,6 +16,7 @@
     "@types/amqplib": "^0.10.1",
     "amqplib": "^0.10.3",
     "express": "^4.18.2",
+    "googleapis": "^111.0.0",
     "pg": "^8.9.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.1",
