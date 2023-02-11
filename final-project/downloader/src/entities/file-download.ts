@@ -4,18 +4,22 @@ export default class FileDownload {
   driveId: string;
   webViewLink: string;
   webContentLink: string;
+  size: number;
+  accountIndex: number;
 
   constructor(
     uploaderId: string,
     driveId: string,
     webViewLink: string,
     webContentLink: string,
-    id = "",
+    size: number,
+    accountIndex: number,
   ) {
-    this.id = id;
     this.uploaderId = uploaderId;
     this.driveId = driveId;
     this.webViewLink = webViewLink;
     this.webContentLink = webContentLink;
+    this.size = size;
+    this.accountIndex = accountIndex;
   }
 }

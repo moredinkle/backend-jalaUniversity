@@ -1,13 +1,15 @@
 import "reflect-metadata";
 import FileRepository from "../database/repositories/file-repository";
 import File from "../entities/file";
-import { FileStatus, FileDownloadInfo } from '../utils/types';
+import { FileStatus } from '../utils/types';
 import AccountService from "./account-service";
 import DriveService from "./drive-service";
 import Account from "../entities/account";
 import HttpError from "../utils/http-error";
 import fs from "fs";
 import path from "path";
+import FileDownloadService from '../../../downloader/src/services/file-download-service'; //!
+import { FileDownloadInfo } from '../../../downloader/src/utils/types';
 
 export default class FileService {
   private fileRepository: FileRepository;
@@ -25,7 +27,6 @@ export default class FileService {
   ): Promise<{ newFileId: string; fileStatus: FileStatus }> {
     try {
       const newFileId = await this.fileRepository.create(file);
-      // this.mqService.publishMessage("UPLOADS", "START DRIVE UPLOAD");
       const response = { newFileId: newFileId, fileStatus: file.status };
       await this.setupDriveUpload(file);
       return response;
@@ -76,9 +77,9 @@ export default class FileService {
   async setupDriveUpload(file: File) {
     const accounts = await this.accountService.readAll();
     const fileDriveIds = [];
-    const driveFilesData = [];
-    for (const account of accounts) {
-      const driveFileData = await this.uploadToDrive(account, file);
+    const driveFilesData: FileDownloadInfo[] = [];
+    for (const [index, account] of accounts.entries()) {
+      const driveFileData = await this.uploadToDrive(account, file, index);
       fileDriveIds.push(driveFileData.driveFileId);
       driveFilesData.push(driveFileData);
     }
@@ -94,21 +95,24 @@ export default class FileService {
       }
     });
 
-    //aqui envia a downloader la data de los archivos
+    //TODO aqui envia a downloader la data de los archivos
   }
 
-  async uploadToDrive(account: Account, file: File): Promise<FileDownloadInfo> {
+  async uploadToDrive(account: Account, file: File, accountIndex: number): Promise<FileDownloadInfo> {
     try {
       const driveService = new DriveService(account);
       const uploadResponse = await driveService.uploadFile(file);
       const fileUrls = await driveService.generatePublicUrl(uploadResponse.id);
-      return {
+      const fileData = {
         viewLink: fileUrls.webViewLink,
         downloadLink: fileUrls.webContentLink,
         driveFileId: uploadResponse.id,
-        uploaderDbId: file.id
-      }
-      ;
+        uploaderDbId: file.id,
+        size: file.size,
+        accountIndex: accountIndex
+      };
+      console.log(fileData);
+      return fileData;
     } catch (error) {
       throw error;
     }

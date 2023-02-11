@@ -64,15 +64,10 @@ export default class DriveService {
         },
       });
   
-      /* 
-      webViewLink: View the file in browser
-      webContentLink: Direct download link 
-      */
       const result = await this.drive.files.get({
         fileId: fileId,
         fields: 'webViewLink, webContentLink',
       });
-      console.log(result.data);
       return result.data;
     } catch (error) {
       console.log(error.message);

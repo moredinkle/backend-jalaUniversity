@@ -1,8 +1,32 @@
 import { Request, Response, NextFunction } from "express";
 import FileDownloadService from "../../services/file-download-service";
 import HttpError from "../../utils/http-error";
+import FileDownload from '../../entities/file-download';
 
 const fileDownloadService = new FileDownloadService();
+
+
+export async function create(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { viewLink, downloadLink, driveFileId, uploaderDbId, size, accountIndex} = req.body;
+    if(!viewLink || !downloadLink || !driveFileId || !uploaderDbId || !size) {
+      throw new HttpError(400, "Bad request");
+    }
+    const file = new FileDownload(uploaderDbId, driveFileId, viewLink, downloadLink, size, accountIndex);
+    const newAccountId = await fileDownloadService.create(file);
+    res.status(201).json({
+      message: "File saved successfully",
+      newAccountId: newAccountId,
+    });
+  } catch (error) {
+    if(error instanceof HttpError) {
+      next(error);
+    }
+    else {
+      next(new HttpError(400, error.message))
+    }
+  }
+}
 
 
 export async function readOne(req: Request, res: Response, next: NextFunction) {
@@ -45,7 +69,7 @@ export async function readAll(req: Request, res: Response, next: NextFunction) {
   try {
     const files = await fileDownloadService.readAll();
     res.status(200).json({
-      message: "Accounts found",
+      message: "Files found",
       data: files,
     });
   } catch (error) {

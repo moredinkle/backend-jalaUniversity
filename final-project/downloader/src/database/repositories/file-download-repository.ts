@@ -4,31 +4,31 @@ import FileDownload from "../../entities/file-download";
 
 export default class FileDownloadRepository {
   async create(fileDownload: FileDownloadEntity) {
-    const fileDownloadRepository = AppDataSource.getMongoRepository(FileDownloadEntity);
-    await fileDownloadRepository.save(fileDownload);
-    return fileDownload.id;
+    const fileDownloadRepository = AppDataSource.getRepository(FileDownloadEntity);
+    const created = await fileDownloadRepository.insert(fileDownload);
+    return created.generatedMaps[0].id;
   }
 
   async readAll() {
-    const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
     let fileDownloads = await repository.find();
     return fileDownloads ? fileDownloads.map((fileDownload) => fileDownload as FileDownload) : undefined;
   }
 
   async readOne(id: string):Promise<FileDownload | undefined> {
-    const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
-    let fileDownload = await repository.findOneBy(id);
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
+    let fileDownload = await repository.findOneBy({id: id});
     return fileDownload ? (fileDownload as FileDownload) : undefined;
   }
 
   async readByUploaderDbId(uploaderDbId: string){
-    const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
-    let fileDownloads = await repository.findBy({uploaderDbId: uploaderDbId});
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
+    let fileDownloads = await repository.findBy({uploaderId: uploaderDbId});
     return fileDownloads ? fileDownloads.map((fileDownload) => fileDownload as FileDownload) : undefined;
   }
 
   async update(fileDownload: FileDownloadEntity) {
-    const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
     const newValues = {
       uploaderId: fileDownload.uploaderId,
       driveId: fileDownload.driveId,
@@ -40,7 +40,7 @@ export default class FileDownloadRepository {
 
   async deleteOne(id: string) {
     const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
-    let deleted = await repository.delete(id);
+    let deleted = await repository.delete({id: id});
     return deleted.affected;
   }
 }

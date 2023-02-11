@@ -4,4 +4,6 @@ export type FileDownloadInfo = {
     downloadLink: string;
     driveFileId: string;
     uploaderDbId: string;
+    size: number;
+    accountIndex: number;
 }

@@ -1,8 +1,8 @@
-import { Column, Entity, ObjectIdColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("FileDownload")
 export default class FileDownloadEntity {
-  @ObjectIdColumn()
+  @PrimaryGeneratedColumn("uuid")
   id: string;
   @Column()
   uploaderId: string;
@@ -12,4 +12,8 @@ export default class FileDownloadEntity {
   webViewLink: string;
   @Column()
   webContentLink: string;
+  @Column()
+  size: number;
+  @Column()
+  accountIndex: number;
 }

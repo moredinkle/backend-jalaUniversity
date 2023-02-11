@@ -11,18 +11,19 @@ export default class FileDownloadService {
     this.fileDownloadRepository = new FileDownloadRepository();
   }
 
-  async create(fileDownloadInfo: FileDownloadInfo) {
+  async create(fileDownload: FileDownload) {
     try {
-      const fileDownload = new FileDownload(
-        fileDownloadInfo.uploaderDbId,
-        fileDownloadInfo.driveFileId,
-        fileDownloadInfo.viewLink,
-        fileDownloadInfo.downloadLink
-      )
+    //   const fileDownload = new FileDownload(
+    //     fileDownloadInfo.uploaderDbId,
+    //     fileDownloadInfo.driveFileId,
+    //     fileDownloadInfo.viewLink,
+    //     fileDownloadInfo.downloadLink
+    //   )
       let newFileDownloadId = await this.fileDownloadRepository.create(fileDownload);
       fileDownload.id = newFileDownloadId;
       return newFileDownloadId;
     } catch (error) {
+        console.log(error);
       throw new HttpError(400, "Wrong info buddy");
     }
   }
