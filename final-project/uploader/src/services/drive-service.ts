@@ -25,8 +25,8 @@ export default class DriveService {
   }
 
   async uploadFile(file: File) {
-    try {zzz
-      const fileStream = fs.createReadStream(file.dbPath);
+    try {
+      const filePath = path.join(__dirname, '..', '..',  `uploads/${file.filename}`);
       const response = await this.drive.files.create({
         requestBody: {
           name: file.filename,
@@ -34,7 +34,7 @@ export default class DriveService {
         },
         media: {
           mimeType: file.mimetype,
-          body: fileStream,
+          body: fs.createReadStream(filePath),
         },
       });
       return response.data;
