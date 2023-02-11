@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import multer from "multer";
 import File from "../../entities/file";
 import FileService from "../../services/file-service";
 import HttpError from '../../utils/http-error';
@@ -8,8 +9,9 @@ const fileService = new FileService();
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const { filename, originalname, mimetype,  size } = req.file;
-    if(!filename || !originalname || !mimetype || !size ) {
-      throw new HttpError(400, "Bad request");
+    console.log(req.file);
+    if(!filename || !originalname || !mimetype || !size) {
+      throw new HttpError(400, "Bad request, properties missing");
     }
     const file = new File(
         filename,
@@ -18,13 +20,14 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         mimetype,
         "REPLICATING"
     );
+    console.log(file);
     const newFileData = await fileService.create(file);
     res.status(201).json({
       message: "File saved successfully",
       data: newFileData,
     });
   } catch (error) {
-    if(error instanceof HttpError) {
+    if(error instanceof HttpError || error instanceof multer.MulterError) {
       next(error);
     }
     else {

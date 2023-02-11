@@ -6,17 +6,16 @@ import AccountService from "./account-service";
 import DriveService from "./drive-service";
 import Account from '../entities/account';
 import HttpError from '../utils/http-error';
-import MqService from './rabbitmq-service';
 
 export default class FileService {
   private fileRepository: FileRepository;
   private accountService: AccountService;
-  private mqService: MqService;
+  // private mqService: MqService;
   
   constructor() {
     this.fileRepository = new FileRepository();
     this.accountService = new AccountService();
-    this.mqService = new MqService();
+    // this.mqService = new MqService();
   }
 
   async create(
@@ -24,9 +23,8 @@ export default class FileService {
   ): Promise<{ newFileId: string; fileStatus: FileStatus }> {
     try {
       const newFileId = await this.fileRepository.create(file);
-      //TODO aqui va guardar en todas las cuentas de drive (rabbit)
-      //enviar el mensaje a rabiit
-      this.mqService.publishMessage("UPLOADS", "START DRIVE UPLOAD");
+      await this.setupDriveUpload(file);
+      // this.mqService.publishMessage("UPLOADS", "START DRIVE UPLOAD");
       const response = { newFileId: newFileId, fileStatus: file.status };
       return response;
     } catch (error) {
@@ -84,7 +82,6 @@ export default class FileService {
     file.driveIds = fileDriveIds.toString();
     file.status = "UPLOADED";
     await this.update(file);
-    //mensaje a downloader 
   }
   
   async uploadToDrive(account: Account, file: File): Promise<string> {
@@ -114,9 +111,5 @@ export default class FileService {
     } catch (error) {
       throw error;
     }
-  }
-
-  async listenMessages(){
-    this.mqService.consumeMessage
   }
 }

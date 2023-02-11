@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import fileRoutes from './API/routes/file.routes';
 import accountRoutes from './API/routes/account.routes';
 import errorMiddleware from "./utils/error-middleware";
-import MQService from "./services/rabbitmq-service";
+// import MQService from "./services/rabbitmq-service";
 
 
 async function startServer() {
@@ -12,8 +12,8 @@ async function startServer() {
   const port = 3005;
 
   await AppDataSource.initialize();
-  const mq = new MQService();
-  await mq.connect();
+  // const mq = new MQService();
+  // await mq.connect();
 
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());

@@ -1,15 +1,16 @@
 import multer from "multer";
 import { Router } from "express";
-import * as fileController from '../controllers/file.controller';
+import * as fileController from "../controllers/file.controller";
+import { GridFsStorage }  from "multer-gridfs-storage";
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/");
-  },
 
-  filename: function (req: any, file: any, cb: any) {
-    const date = new Date()
-    cb(null, `${date.getTime()}_${file.originalname}`);
+const storage = new GridFsStorage({
+  url: 'mongodb://0.0.0.0:27017/file-uploader',
+  file: (req, file) => {
+    return new Promise((resolve) => {
+      const filename = `${new Date().getTime()}_${file.originalname}`;
+      resolve(filename);
+  });
   },
 });
 
@@ -19,7 +20,7 @@ const router = Router();
 
 router.get("/", fileController.readAll);
 router.get("/:fileId", fileController.readOne);
-router.post("/", upload.single('file'), fileController.create);
+router.post("/", upload.single("file"), fileController.create);
 router.delete("/:fileId", fileController.deleteOne);
 
 export default router;
