@@ -4,6 +4,7 @@ import path from "path";
 import Account from "../entities/account";
 import File from "../entities/file";
 import fs from 'fs';
+import stream from "stream";
 
 export default class DriveService {
   private oauth2Client: OAuth2Client;
@@ -24,9 +25,11 @@ export default class DriveService {
     });
   }
 
-  async uploadFile(file: File) {
+  async uploadFile(file: File, fileBuffer: Buffer) {
     try {
-      const filePath = path.join(__dirname, `../../uploads/${file.filename}`);
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(fileBuffer);
+      
       const response = await this.drive.files.create({
         requestBody: {
           name: file.filename,
@@ -34,7 +37,7 @@ export default class DriveService {
         },
         media: {
           mimeType: file.mimetype,
-          body: fs.createReadStream(filePath),
+          body: bufferStream,
         },
       });
       return response.data;

@@ -88,12 +88,8 @@ export default class FileService {
     file.status = "UPLOADED";
     await this.update(file);
 
-    const filePath = path.join(__dirname, `../../uploads/${file.filename}`);
-    fs.unlink(filePath, (err) => {
-      if(err){
-        throw new HttpError(500, err.message);
-      }
-    });
+
+    await this.fileRepository.deleteFileFromGridFS(file.filename);
 
     //TODO aqui envia a downloader la data de los archivos
   }
@@ -101,7 +97,8 @@ export default class FileService {
   async uploadToDrive(account: Account, file: File, accountIndex: number): Promise<FileDownloadInfo> {
     try {
       const driveService = new DriveService(account);
-      const uploadResponse = await driveService.uploadFile(file);
+      const fileFromGridFs = await this.fileRepository.getFileFromGridFS(file.filename);
+      const uploadResponse = await driveService.uploadFile(file, fileFromGridFs);
       const fileUrls = await driveService.generatePublicUrl(uploadResponse.id);
       const fileData = {
         viewLink: fileUrls.webViewLink,
@@ -111,7 +108,6 @@ export default class FileService {
         size: file.size,
         accountIndex: accountIndex
       };
-      console.log(fileData);
       return fileData;
     } catch (error) {
       throw error;

@@ -10,7 +10,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const { filename, originalname, mimetype,  size } = req.file;
     if(!filename || !originalname || !mimetype || !size) {
-      throw new HttpError(400, "Bad request, properties missing");
+      throw new HttpError(400, "Bad request");
     }
     const file = new File(
         filename,
