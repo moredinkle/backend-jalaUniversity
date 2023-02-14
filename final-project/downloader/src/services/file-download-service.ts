@@ -2,7 +2,8 @@ import "reflect-metadata";
 import FileDownloadRepository from "../database/repositories/file-download-repository";
 import FileDownload from "../entities/file-download";
 import HttpError from '../utils/http-error';
-import { FileDownloadInfo } from "../utils/types";
+import { FileDownloadInfo } from '../utils/types';
+import logger from 'jet-logger';
 
 export default class FileDownloadService {
   private fileDownloadRepository: FileDownloadRepository;
@@ -11,20 +12,21 @@ export default class FileDownloadService {
     this.fileDownloadRepository = new FileDownloadRepository();
   }
 
-  async create(fileDownload: FileDownload) {
+  async create(fileDownloadInfo: FileDownloadInfo) {
     try {
-    //   const fileDownload = new FileDownload(
-    //     fileDownloadInfo.uploaderDbId,
-    //     fileDownloadInfo.driveFileId,
-    //     fileDownloadInfo.viewLink,
-    //     fileDownloadInfo.downloadLink
-    //   )
+      const fileDownload = new FileDownload(
+        fileDownloadInfo.uploaderDbId,
+        fileDownloadInfo.driveFileId,
+        fileDownloadInfo.viewLink,
+        fileDownloadInfo.downloadLink,
+        fileDownloadInfo.size,
+        fileDownloadInfo.accountIndex
+      );
       let newFileDownloadId = await this.fileDownloadRepository.create(fileDownload);
       fileDownload.id = newFileDownloadId;
       return newFileDownloadId;
     } catch (error) {
-        console.log(error);
-      throw new HttpError(400, "Wrong info buddy");
+      throw new HttpError(400, error.message);
     }
   }
 
@@ -68,7 +70,7 @@ export default class FileDownloadService {
   async deleteOne(id: string) {
     let deletedRows = await this.fileDownloadRepository.deleteOne(id);
     if (deletedRows !== 0) {
-      console.log(`FileDownload with id:${id} deleted`);
+      logger.info(`FileDownload with id:${id} deleted`);
     } else {
       throw new HttpError(404, "FileDownload not found");
     }

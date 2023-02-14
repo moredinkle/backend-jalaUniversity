@@ -1,7 +1,8 @@
 import express from "express";
 import { AppDataSource } from "./database/data-source";
 import bodyParser from "body-parser";
-import fileDownloadRoutes from './API/routes/file-download.routes'
+import fileDownloadRoutes from './API/routes/file-download.routes';
+import MQService from "./services/rabbitmq-service";
 
 async function startServer() {
   const app = express();
@@ -9,6 +10,8 @@ async function startServer() {
 
 
   await AppDataSource.initialize();
+  await MQService.getInstance().connect();
+  MQService.getInstance().consumeMessage(MQService.getInstance().downloader_channel, "UPLOADER-DOWNLOADER", "drive.*.*");
 
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
