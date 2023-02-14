@@ -1,96 +1,82 @@
-import client, { Channel, Connection, ConsumeMessage } from "amqplib";
-import { Queue } from "../utils/types";
+import client, { Channel, Connection } from "amqplib";
+import HttpError from "../utils/http-error";
+import { DriveUploadCompleted, FileToUpload, Exchange,  DriveDeleteCompleted } from "../utils/types";
+import FileService from "./file-service";
 export default class MQService {
   static instance: MQService | null;
-  private _channel!: Channel;
+  private _uploader_channel!: Channel;
+  private _downloader_channel!: Channel;
+  private _stats_channel!: Channel;
   private _connection!: Connection;
+  private fileService: FileService;
 
-  get channel() {
-    return this._channel;
+  get uploader_channel() {
+    return this._uploader_channel;
+  }
+
+  get downloader_channel() {
+    return this._downloader_channel;
+  }
+
+  get stats_channel() {
+    return this._stats_channel;
   }
 
   constructor() {
     if (MQService.instance) {
       return MQService.instance;
     }
-
+    
     MQService.instance = this;
+    this.fileService = new FileService();
   }
 
   async connect() {
     try {
       this._connection = await client.connect("amqp://admin:admin@localhost:5672");
-      this._channel = await this._connection.createChannel();
+      this._downloader_channel = await this._connection.createChannel();
+      this._uploader_channel = await this._connection.createChannel();
+      this._stats_channel = await this._connection.createChannel();
+      console.log("conectado");
     } catch (error) {
-      throw new Error(
-        "Error on conection of Message Broker Connection on Uploader"
-      );
+      throw new HttpError(500, "Error on MQ connection");
     }
   }
 
-  async publishMessage(queue: Queue, message: string) {
+  async publishMessage(channel: Channel, exchange: Exchange, routingKey: string, message: FileToUpload | DriveUploadCompleted | DriveDeleteCompleted) {
     try {
-      await this._channel.assertQueue(queue, { durable: false });
-      await this._channel.sendToQueue(queue, Buffer.from(message));
-      console.log("mensaje enviado");
+      await channel.assertExchange(exchange, "topic", { durable: false });
+      channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(message)));
+      console.log("Mensaje enviado");
       return message;
     } catch (error) {
-      throw new Error("Error on MQ");
+      throw new HttpError(500, "Error on MQ");
     }
   }
 
-  async consumeMessage(queue: Queue, action: Function | undefined) {
+  async consumeMessage(channel: Channel, exchange: Exchange, routingKey: string) {
     try {
-      await this._channel.assertQueue(queue, { durable: false });
-      await this._channel.consume(queue, (message) => {
-        if(action) {
-          action();
+      await channel.assertExchange(exchange, "topic", { durable: false });
+      const { queue } = await channel.assertQueue("", { durable: false });
+      channel.bindQueue(queue, exchange, routingKey);
+      await channel.consume(queue, (data) => {
+        if(data) {
+          console.log(`Message received. Routing key: ${routingKey}`);
+          switch(routingKey){
+            case 'drive.upload.start': {
+              const file = JSON.parse(data.content.toString()) as FileToUpload;
+              console.log("starting drive upload\n", file);
+              this.fileService.setupDriveUpload(file.data);
+            }
+            case 'drive.delete.start': {
+              const file = JSON.parse(data.content.toString()) as FileToUpload;
+              this.fileService.setupDriveDelete(file.data);
+            }
+          }
         }
       }, { noAck: true });
     } catch (error) {
-      throw new Error("Error on MQ");
+      throw new HttpError(500, error.message);
     }
   }
 }
-
-
-
-
-// export async function createConnection(): Promise<Connection> {
-//   const connection: Connection = await client.connect(
-//     "amqp://admin:admin@localhost:5672"
-//   );
-//   return connection;
-// }
-
-// export async function createChannel(
-//   connection: Connection,
-//   queue: string
-// ): Promise<Channel> {
-//   try {
-//     const channel = await connection.createChannel();
-//     await channel.assertQueue(queue, { durable: false });
-//     return channel;
-//   } catch (err) {
-//     throw err;
-//   }
-// }
-
-// export async function sendMessageToQueue(
-//   channel: Channel,
-//   queue: string,
-//   message: string
-// ) {
-//   channel.sendToQueue(queue, Buffer.from(message));
-//   console.log("[x] Sent %s", message);
-// }
-
-// export async function consumeMessage(channel: Channel, queue: string) {
-//   channel.consume(
-//     queue,
-//     function (message: ConsumeMessage) {
-//       console.log(`Message:\n${message.content.toString()}`);
-//     },
-//     { noAck: true }
-//   );
-// }

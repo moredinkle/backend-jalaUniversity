@@ -6,21 +6,19 @@ import AccountService from "./account-service";
 import DriveService from "./drive-service";
 import Account from "../entities/account";
 import HttpError from "../utils/http-error";
-import fs from "fs";
-import path from "path";
-import FileDownloadService from '../../../downloader/src/services/file-download-service'; //!
 import { FileDownloadInfo } from '../../../downloader/src/utils/types';
+import MQService from "./rabbitmq-service";
 
 export default class FileService {
   private fileRepository: FileRepository;
   private accountService: AccountService;
-  // private mqService: MqService;
 
   constructor() {
     this.fileRepository = new FileRepository();
     this.accountService = new AccountService();
-    // this.mqService = new MqService();
+    // MQService.instance.consumeMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.*.*");
   }
+
 
   async create(
     file: File
@@ -28,7 +26,9 @@ export default class FileService {
     try {
       const newFileId = await this.fileRepository.create(file);
       const response = { newFileId: newFileId, fileStatus: file.status };
+      //TODO mensaje subida a drive
       await this.setupDriveUpload(file);
+      // await MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.upload.start", {data: file});
       return response;
     } catch (error) {
       throw new HttpError(400, error.message);
@@ -58,7 +58,7 @@ export default class FileService {
         throw new HttpError(404, "File not found");
       }
     } catch (error) {
-      throw new HttpError(400, "Bad request");
+      throw new HttpError(400, error.message);
     }
   }
 
@@ -69,6 +69,7 @@ export default class FileService {
       console.log(`File with id:${id} deleted`);
       //TODO mensaje de rabbit para eliminar de drive
       await this.setupDriveDelete(file);
+      // await MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.delete.start", {data: file});
     } else {
       throw new HttpError(404, "File not found");
     }
@@ -90,8 +91,9 @@ export default class FileService {
 
 
     await this.fileRepository.deleteFileFromGridFS(file.filename);
+    // MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFilesData});
 
-    //TODO aqui envia a downloader la data de los archivos
+
   }
 
   async uploadToDrive(account: Account, file: File, accountIndex: number): Promise<FileDownloadInfo> {
@@ -120,13 +122,13 @@ export default class FileService {
     driveIds.map(async (id, index) => {
       await this.deleteFromDrive(id, accounts[index]);
     });
+    // MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER-DOWNLOADER", "drive.delete.complete", {uploaderDbId: file.id});
   }
 
   async deleteFromDrive(driveId: string, account: Account) {
     try {
       let driveService = new DriveService(account);
       await driveService.deleteFile(driveId);
-      driveService = undefined;
     } catch (error) {
       throw error;
     }

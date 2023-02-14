@@ -74,7 +74,7 @@ export default class FileRepository {
     if (fileBuffer) {
       return fileBuffer;
     } else {
-      throw new HttpError(400, "File not found in GridFS");
+      throw new HttpError(404, "File not found in GridFS");
     }
   }
 

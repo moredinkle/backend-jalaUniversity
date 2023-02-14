@@ -9,6 +9,7 @@ const fileService = new FileService();
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const { filename, originalname, mimetype,  size } = req.file;
+    console.log(req.file);
     if(!filename || !originalname || !mimetype || !size) {
       throw new HttpError(400, "Bad request");
     }
