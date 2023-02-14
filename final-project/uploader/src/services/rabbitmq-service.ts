@@ -1,9 +1,10 @@
 import client, { Channel, Connection } from "amqplib";
 import HttpError from "../utils/http-error";
-import { DriveUploadCompleted, FileToUpload, Exchange,  DriveDeleteCompleted } from "../utils/types";
+import { DriveUploadCompleted, FileToUpload, Exchange, DriveDeleteCompleted } from "../utils/types";
 import FileService from "./file-service";
+import logger from 'jet-logger';
 export default class MQService {
-  static instance: MQService | null;
+  private static _instance: MQService = new MQService();
   private _uploader_channel!: Channel;
   private _downloader_channel!: Channel;
   private _stats_channel!: Channel;
@@ -23,58 +24,79 @@ export default class MQService {
   }
 
   constructor() {
-    if (MQService.instance) {
-      return MQService.instance;
+    if(MQService._instance){
+        logger.warn("Use get instance");
+        return;
     }
-    
-    MQService.instance = this;
-    this.fileService = new FileService();
+    MQService._instance = this;
+}
+
+  public static getInstance(): MQService {
+    return MQService._instance;
   }
 
   async connect() {
     try {
-      this._connection = await client.connect("amqp://admin:admin@localhost:5672");
+      this._connection = await client.connect(
+        "amqp://admin:admin@localhost:5672"
+      );
       this._downloader_channel = await this._connection.createChannel();
       this._uploader_channel = await this._connection.createChannel();
       this._stats_channel = await this._connection.createChannel();
-      console.log("conectado");
+      this.fileService = new FileService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
     }
   }
 
-  async publishMessage(channel: Channel, exchange: Exchange, routingKey: string, message: FileToUpload | DriveUploadCompleted | DriveDeleteCompleted) {
+  async publishMessage(
+    channel: Channel,
+    exchange: Exchange,
+    routingKey: string,
+    message: FileToUpload | DriveUploadCompleted | DriveDeleteCompleted
+  ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
-      channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(message)));
-      console.log("Mensaje enviado");
+      channel.publish(
+        exchange,
+        routingKey,
+        Buffer.from(JSON.stringify(message))
+      );
+      logger.info(`Mensaje enviado en ruta: ${routingKey}`);
       return message;
     } catch (error) {
       throw new HttpError(500, "Error on MQ");
     }
   }
 
-  async consumeMessage(channel: Channel, exchange: Exchange, routingKey: string) {
+  async consumeMessage(
+    channel: Channel,
+    exchange: Exchange,
+    routingKey: string
+  ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
       const { queue } = await channel.assertQueue("", { durable: false });
       channel.bindQueue(queue, exchange, routingKey);
-      await channel.consume(queue, (data) => {
-        if(data) {
-          console.log(`Message received. Routing key: ${routingKey}`);
-          switch(routingKey){
-            case 'drive.upload.start': {
+      await channel.consume(
+        queue,
+        (data) => {
+          if (data) {
+            logger.imp(data.fields.routingKey);
+            if(data.fields.routingKey === "drive.upload.start") {
               const file = JSON.parse(data.content.toString()) as FileToUpload;
-              console.log("starting drive upload\n", file);
+              logger.info("Starting drive upload");
               this.fileService.setupDriveUpload(file.data);
             }
-            case 'drive.delete.start': {
+            else if(data.fields.routingKey === "drive.delete.start") {
               const file = JSON.parse(data.content.toString()) as FileToUpload;
+              logger.info("Starting drive delete");
               this.fileService.setupDriveDelete(file.data);
             }
           }
-        }
-      }, { noAck: true });
+        },
+        { noAck: true }
+      );
     } catch (error) {
       throw new HttpError(500, error.message);
     }

@@ -8,6 +8,7 @@ import Account from "../entities/account";
 import HttpError from "../utils/http-error";
 import { FileDownloadInfo } from '../../../downloader/src/utils/types';
 import MQService from "./rabbitmq-service";
+import logger from 'jet-logger';
 
 export default class FileService {
   private fileRepository: FileRepository;
@@ -16,7 +17,6 @@ export default class FileService {
   constructor() {
     this.fileRepository = new FileRepository();
     this.accountService = new AccountService();
-    // MQService.instance.consumeMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.*.*");
   }
 
 
@@ -27,8 +27,7 @@ export default class FileService {
       const newFileId = await this.fileRepository.create(file);
       const response = { newFileId: newFileId, fileStatus: file.status };
       //TODO mensaje subida a drive
-      await this.setupDriveUpload(file);
-      // await MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.upload.start", {data: file});
+      await MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER", "drive.upload.start", {data: file});
       return response;
     } catch (error) {
       throw new HttpError(400, error.message);
@@ -66,10 +65,9 @@ export default class FileService {
     const file = await this.readOne(id);
     const deletedRows = await this.fileRepository.deleteOne(id);
     if (deletedRows !== 0) {
-      console.log(`File with id:${id} deleted`);
+      logger.info(`File with id:${id} deleted`);
       //TODO mensaje de rabbit para eliminar de drive
-      await this.setupDriveDelete(file);
-      // await MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER", "drive.delete.start", {data: file});
+      await MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER", "drive.delete.start", {data: file});
     } else {
       throw new HttpError(404, "File not found");
     }
@@ -91,7 +89,7 @@ export default class FileService {
 
 
     await this.fileRepository.deleteFileFromGridFS(file.filename);
-    // MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFilesData});
+    MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFilesData});
 
 
   }
@@ -122,7 +120,7 @@ export default class FileService {
     driveIds.map(async (id, index) => {
       await this.deleteFromDrive(id, accounts[index]);
     });
-    // MQService.instance.publishMessage(MQService.instance.uploader_channel, "UPLOADER-DOWNLOADER", "drive.delete.complete", {uploaderDbId: file.id});
+    MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.delete.complete", {uploaderDbId: file.id});
   }
 
   async deleteFromDrive(driveId: string, account: Account) {
