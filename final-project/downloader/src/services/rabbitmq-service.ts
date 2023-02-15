@@ -6,22 +6,12 @@ import FileDownloadService from "./file-download-service";
 import logger from 'jet-logger';
 export default class MQService {
   private static _instance: MQService = new MQService();
-  private _uploader_channel!: Channel;
   private _downloader_channel!: Channel;
-  private _stats_channel!: Channel;
   private _connection!: Connection;
   private fileDownloadService: FileDownloadService;
 
-  get uploader_channel() {
-    return this._uploader_channel;
-  }
-
   get downloader_channel() {
     return this._downloader_channel;
-  }
-
-  get stats_channel() {
-    return this._stats_channel;
   }
 
   constructor() {
@@ -42,8 +32,6 @@ export default class MQService {
         "amqp://admin:admin@localhost:5672"
       );
       this._downloader_channel = await this._connection.createChannel();
-      this._uploader_channel = await this._connection.createChannel();
-      this._stats_channel = await this._connection.createChannel();
       this.fileDownloadService = new FileDownloadService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
@@ -81,7 +69,7 @@ export default class MQService {
       channel.bindQueue(queue, exchange, routingKey);
       await channel.consume(
         queue,
-        (data) => {
+        async (data) => {
           if (data) {
             logger.imp(data.fields.routingKey);
             if(data.fields.routingKey === "drive.upload.complete") {
@@ -92,12 +80,9 @@ export default class MQService {
               });
             }
             else if(data.fields.routingKey === "drive.delete.complete") {
-              const filesObj = JSON.parse(data.content.toString()) as DriveUploadCompleted;
+              const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
               logger.info("Saving uploaded file data");
-              filesObj.data.map(async (file) => {
-                //TODO en repo crear by deleteByUploaderId
-                // await this.fileDownloadService.deleteOne(file.)
-              });
+              await this.fileDownloadService.deleteByUploaderId(file.uploaderDbId);
             }
           }
         },

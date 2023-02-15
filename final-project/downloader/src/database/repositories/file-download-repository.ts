@@ -1,6 +1,7 @@
 import { AppDataSource } from "../data-source";
 import FileDownloadEntity from "../db-entities/file-download.entity";
 import FileDownload from "../../entities/file-download";
+import logger from 'jet-logger';
 
 export default class FileDownloadRepository {
   async create(fileDownload: FileDownloadEntity) {
@@ -39,8 +40,15 @@ export default class FileDownloadRepository {
   }
 
   async deleteOne(id: string) {
-    const repository = AppDataSource.getMongoRepository(FileDownloadEntity);
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
     let deleted = await repository.delete({id: id});
     return deleted.affected;
+  }
+
+  async deleteByUploaderId(uploaderId: string){
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
+    const rows = await repository.delete({uploaderId: uploaderId});
+    logger.warn(`Deleted rows: ${rows}`);
+    return rows.affected;
   }
 }

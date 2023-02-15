@@ -7,6 +7,7 @@ const router = Router();
 router.get("/", fileDownloadController.readAll);
 router.get("/:fileDownloadId", fileDownloadController.readOne);
 router.get("/uploader/:uploaderDbId", fileDownloadController.readByUploaderDbId);
+router.get("/download/:fileId", fileDownloadController.getDownloadUri);
 
 
 

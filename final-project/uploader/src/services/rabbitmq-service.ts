@@ -6,21 +6,11 @@ import logger from 'jet-logger';
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _uploader_channel!: Channel;
-  private _downloader_channel!: Channel;
-  private _stats_channel!: Channel;
   private _connection!: Connection;
   private fileService: FileService;
 
   get uploader_channel() {
     return this._uploader_channel;
-  }
-
-  get downloader_channel() {
-    return this._downloader_channel;
-  }
-
-  get stats_channel() {
-    return this._stats_channel;
   }
 
   constructor() {
@@ -40,9 +30,7 @@ export default class MQService {
       this._connection = await client.connect(
         "amqp://admin:admin@localhost:5672"
       );
-      this._downloader_channel = await this._connection.createChannel();
       this._uploader_channel = await this._connection.createChannel();
-      this._stats_channel = await this._connection.createChannel();
       this.fileService = new FileService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
