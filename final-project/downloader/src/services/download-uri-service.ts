@@ -14,7 +14,6 @@ export default class DownloadUriService {
   async create(downloadUri: DownloadUri) {
     try {
       let newDownloadUriId = await this.downloadUriRepository.create(downloadUri);
-      downloadUri.id = newDownloadUriId;
       return newDownloadUriId;
     } catch (error) {
       throw new HttpError(400, error.message);

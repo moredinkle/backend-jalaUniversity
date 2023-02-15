@@ -89,14 +89,16 @@ export default class FileDownloadService {
   }
 
   
-  async getDownloadUri(uploaderId: string){
+  async getDownloadUri(uploaderId: string): Promise<{downloadLink: string, timestamp: Date}>{
     //TODO elegir cuenta para enviar, algo como leastUsedAccount
     const files = await this.fileDownloadRepository.readByUploaderDbId(uploaderId);
     const accountIndex = Math.floor(Math.random()*3);
     logger.info(`using account: ${accountIndex} for download`);
+
     const downloadUri = new DownloadUri(uploaderId, files[accountIndex].webContentLink);
     const newId = await this.downloadUriService.create(downloadUri);
+
     downloadUri.id = newId;
-    return downloadUri;
+    return {downloadLink: downloadUri.uri, timestamp: downloadUri.date};
   }
 }

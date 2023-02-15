@@ -4,9 +4,9 @@ import DownloadUri from "../../entities/download-uri";
 import logger from "jet-logger";
 
 export default class DownloadUriRepository {
-  async create(downloadUri: DownloadUriEntity): Promise<string> {
-    const downloadUriRepository = AppDataSource.getRepository(DownloadUriEntity);
-    const created = await downloadUriRepository.insert(downloadUri);
+  async create(downloadUri: DownloadUriEntity) {
+    const repository = AppDataSource.getRepository(DownloadUriEntity);
+    const created = await repository.insert(downloadUri);
     return created.generatedMaps[0].id;
   }
 
