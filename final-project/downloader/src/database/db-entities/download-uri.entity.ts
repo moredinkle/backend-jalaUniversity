@@ -7,5 +7,11 @@ export default class DownloadUriEntity {
   @Column()
   date: Date;
   @Column()
+  uri: string;
+  @Column()
+  accountId: string;
+  @Column()
+  size: number;
+  @Column()
   fileId: string;
 }

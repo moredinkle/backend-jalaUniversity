@@ -72,19 +72,11 @@ export async function readAll(req: Request, res: Response, next: NextFunction) {
 export async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { accountId } = req.params;
-    const { email, client_id, client_secret, redirect_uri, refresh_token } = req.body;
-    if(!accountId || !email || !client_id || !client_secret || !redirect_uri || !refresh_token) {
+    const { refresh_token } = req.body;
+    if(!accountId || !refresh_token) {
       throw new HttpError(400, "Bad request");
     }
-    const account = new Account(
-      accountId,
-      email,
-      client_id,
-      client_secret,
-      redirect_uri,
-      refresh_token
-    );
-    await accountService.update(account);
+    await accountService.updateRefreshToken(accountId, refresh_token);
     res.status(200).json({
       message: "Account updated successfully",
     });

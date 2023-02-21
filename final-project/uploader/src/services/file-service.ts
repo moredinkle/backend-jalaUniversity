@@ -86,12 +86,7 @@ export default class FileService {
     file.driveIds = fileDriveIds.toString();
     file.status = "UPLOADED";
     await this.update(file);
-
-
-    await this.fileRepository.deleteFileFromGridFS(file.filename);
     MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFilesData});
-
-
   }
 
   async uploadToDrive(account: Account, file: File, accountIndex: number): Promise<FileDownloadInfo> {
@@ -106,7 +101,7 @@ export default class FileService {
         driveFileId: uploadResponse.id,
         uploaderDbId: file.id,
         size: file.size,
-        accountIndex: accountIndex
+        accountId: account.id
       };
       return fileData;
     } catch (error) {

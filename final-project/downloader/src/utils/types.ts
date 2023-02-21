@@ -7,5 +7,6 @@ export type FileDownloadInfo = {
     driveFileId: string;
     uploaderDbId: string;
     size: number;
-    accountIndex: number;
-}
+    accountId: string;
+};
+export type DownloadsNumbers = {accountId: string, bytes_downloaded: number};

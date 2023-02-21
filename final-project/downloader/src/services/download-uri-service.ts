@@ -32,6 +32,7 @@ export default class DownloadUriService {
 
   async readAll() {
     let DownloadUris = await this.downloadUriRepository.readAll();
+    await this.balanceLoad();
     return DownloadUris;
   }
 
@@ -56,6 +57,16 @@ export default class DownloadUriService {
     } else {
       throw new HttpError(404, "File not found");
     }
+  }
+
+  async balanceLoad() {
+    const accountNumbers = await this.downloadUriRepository.getDownloadNumbers();
+    const lastDownloads = await this.downloadUriRepository.getLastDownloads(2);
+    let accountForDownload = accountNumbers[0].accountId;
+    if(lastDownloads[0].accountId === lastDownloads[1].accountId) {
+      accountForDownload = accountNumbers[1].accountId;
+    }
+    return accountForDownload;
   }
 
 }

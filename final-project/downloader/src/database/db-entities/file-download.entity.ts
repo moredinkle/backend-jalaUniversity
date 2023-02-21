@@ -15,5 +15,5 @@ export default class FileDownloadEntity {
   @Column()
   size: number;
   @Column()
-  accountIndex: number;
+  accountId: string;
 }

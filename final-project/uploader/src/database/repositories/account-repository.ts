@@ -1,6 +1,6 @@
 import { AppDataSource } from "../data-source";
 import AccountEntity from "../db-entities/account.entity";
-import Account from "../../entities/account";
+import Account from '../../entities/account';
 
 export default class AccountRepository {
   async create(account: AccountEntity) {
@@ -32,6 +32,11 @@ export default class AccountRepository {
       refresh_token: account.refresh_token,
     };
     await repository.update(account.id, newValues);
+  }
+
+  async updateToken(account: AccountEntity, newToken: string){
+    const repository = AppDataSource.getMongoRepository(AccountEntity);
+    await repository.update(account.id, {refresh_token: newToken});
   }
 
   async deleteOne(id: string) {
