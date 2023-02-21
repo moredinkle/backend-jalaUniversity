@@ -51,4 +51,15 @@ export default class FileDownloadRepository {
     logger.warn(`Deleted rows: ${rows}`);
     return rows.affected;
   }
+
+  async getAccounts(): Promise<{accountId: string}[]> {
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
+    const accounts = await repository.createQueryBuilder('FileDownload')
+      .select("FileDownload.accountId")
+      .distinctOn(['FileDownload.accountId'])
+      .getMany();
+    const result = accounts.map(it => {return {accountId: it.accountId}});
+    return result;
+
+  }
 }

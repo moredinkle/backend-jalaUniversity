@@ -45,7 +45,7 @@ export default class DownloadUriRepository {
     SELECT "accountId", SUM(size) AS bytes_downloaded
     FROM "DownloadUri"
     WHERE DATE(date) = (now() - interval '4 hour')::date
-    GROUP BY "accountIndex"
+    GROUP BY "accountId"
     ORDER BY bytes_downloaded ASC
     `);
     return data as DownloadsNumbers[];
@@ -61,5 +61,15 @@ export default class DownloadUriRepository {
     return downloads
       ? downloads.map((downloadUri) => downloadUri as DownloadUri)
       : undefined;
+  }
+
+  async getAccountsUsedToday(): Promise<{accountId: string}[]>{
+    const accounts = await AppDataSource.query(`
+    SELECT DISTINCT "accountId"
+    FROM "DownloadUri"
+    WHERE DATE(date) = (now() - interval '4 hour')::date
+    `);
+    return accounts;
+
   }
 }

@@ -17,7 +17,7 @@ async function startServer() {
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());
   app.use('/api/v1/files',fileDownloadRoutes);
-  // app.use(errorMiddleware);
+  app.use(errorMiddleware);
 
   app.listen(port, () => console.log(`Server listening on port ${port}`));
 }

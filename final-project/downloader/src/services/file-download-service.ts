@@ -1,15 +1,15 @@
 import "reflect-metadata";
 import FileDownloadRepository from "../database/repositories/file-download-repository";
 import FileDownload from "../entities/file-download";
-import HttpError from '../utils/http-error';
-import { FileDownloadInfo } from '../utils/types';
-import logger from 'jet-logger';
-import DownloadUriService from './download-uri-service';
-import DownloadUri from '../entities/download-uri';
+import HttpError from "../utils/http-error";
+import { FileDownloadInfo } from "../utils/types";
+import logger from "jet-logger";
+import DownloadUriService from "./download-uri-service";
+import DownloadUri from "../entities/download-uri";
 
 export default class FileDownloadService {
   private fileDownloadRepository: FileDownloadRepository;
-  private downloadUriService: DownloadUriService
+  private downloadUriService: DownloadUriService;
 
   constructor() {
     this.fileDownloadRepository = new FileDownloadRepository();
@@ -26,7 +26,9 @@ export default class FileDownloadService {
         fileDownloadInfo.size,
         fileDownloadInfo.accountId
       );
-      let newFileDownloadId = await this.fileDownloadRepository.create(fileDownload);
+      let newFileDownloadId = await this.fileDownloadRepository.create(
+        fileDownload
+      );
       fileDownload.id = newFileDownloadId;
       return newFileDownloadId;
     } catch (error) {
@@ -35,7 +37,9 @@ export default class FileDownloadService {
   }
 
   async readOne(fileDownloadId: string) {
-    let fileDownload = await this.fileDownloadRepository.readOne(fileDownloadId);
+    let fileDownload = await this.fileDownloadRepository.readOne(
+      fileDownloadId
+    );
     if (fileDownload) {
       return fileDownload;
     } else {
@@ -44,11 +48,13 @@ export default class FileDownloadService {
   }
 
   async readbyUploaderDbId(uploaderDbId: string) {
-    let fileDownloads = await this.fileDownloadRepository.readByUploaderDbId(uploaderDbId);
-    if (fileDownloads) {
+    let fileDownloads = await this.fileDownloadRepository.readByUploaderDbId(
+      uploaderDbId
+    );
+    if (fileDownloads.length > 0) {
       return fileDownloads;
     } else {
-      throw new HttpError(404, "Files not found");
+      throw new HttpError(404, "File not found");
     }
   }
 
@@ -60,10 +66,9 @@ export default class FileDownloadService {
   async update(fileDownload: FileDownload) {
     try {
       const exisitingFileDownload = await this.readOne(fileDownload.id);
-      if(exisitingFileDownload){
+      if (exisitingFileDownload) {
         await this.fileDownloadRepository.update(fileDownload);
-      }
-      else {
+      } else {
         throw new HttpError(404, "FileDownload not found");
       }
     } catch (error) {
@@ -80,25 +85,60 @@ export default class FileDownloadService {
     }
   }
 
-  async deleteByUploaderId(uploaderId: string){
-    const deletedRows = await this.fileDownloadRepository.deleteByUploaderId(uploaderId);
+  async deleteByUploaderId(uploaderId: string) {
+    const deletedRows = await this.fileDownloadRepository.deleteByUploaderId(
+      uploaderId
+    );
     if (deletedRows !== 0) {
     } else {
       throw new HttpError(404, "File not found");
     }
   }
 
-  
-  async getDownloadUri(uploaderId: string): Promise<{downloadLink: string, timestamp: Date}>{
-    const files = await this.fileDownloadRepository.readByUploaderDbId(uploaderId);
-    const accountIndex = await this.downloadUriService.balanceLoad();
-    logger.info(`using account: ${accountIndex} for download`);
-    const fileToDownload = files[accountIndex];
+  async getDownloadUri(uploaderId: string): Promise<{ downloadLink: string; timestamp: Date }> {
+    const files = await this.fileDownloadRepository.readByUploaderDbId(
+      uploaderId
+    );
+    if (!files.length) {
+      throw new HttpError(400, "Bad request");
+    }
+    const accounts = await this.getAccounts();
+    const accountsUsedToday =
+      await this.downloadUriService.getAccountsUsedToday();
+    let accountId = "";
+    let allAccountsUsedToday = true;
 
-    const downloadUri = new DownloadUri(uploaderId, fileToDownload.webContentLink, accountIndex, fileToDownload.size);
+    for (const account of accounts) {
+      const acc = accountsUsedToday.find(
+        (it) => it.accountId === account.accountId
+      );
+      if (!acc) {
+        console.log("hello");
+        accountId = account.accountId;
+        allAccountsUsedToday = false;
+        break;
+      }
+    }
+
+    if (allAccountsUsedToday) {
+      accountId = await this.downloadUriService.balanceLoad();
+    }
+
+    logger.info(`using account: ${accountId} for download`);
+    const fileToDownload = files.find((file) => file.accountId === accountId);
+    const downloadUri = new DownloadUri(
+      uploaderId,
+      fileToDownload.webContentLink,
+      accountId,
+      fileToDownload.size
+    );
     const newId = await this.downloadUriService.create(downloadUri);
 
     downloadUri.id = newId;
-    return {downloadLink: downloadUri.uri, timestamp: downloadUri.date};
+    return { downloadLink: downloadUri.uri, timestamp: downloadUri.date };
+  }
+
+  async getAccounts() {
+    return await this.fileDownloadRepository.getAccounts();
   }
 }

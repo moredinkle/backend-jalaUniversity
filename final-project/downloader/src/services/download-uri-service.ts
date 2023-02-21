@@ -59,14 +59,23 @@ export default class DownloadUriService {
     }
   }
 
-  async balanceLoad() {
+  async balanceLoad(): Promise<string | undefined> {
     const accountNumbers = await this.downloadUriRepository.getDownloadNumbers();
+    // if(!accountNumbers.length) {
+    //   return undefined;
+    // }
+
     const lastDownloads = await this.downloadUriRepository.getLastDownloads(2);
+
     let accountForDownload = accountNumbers[0].accountId;
     if(lastDownloads[0].accountId === lastDownloads[1].accountId) {
       accountForDownload = accountNumbers[1].accountId;
     }
     return accountForDownload;
+  }
+
+  async getAccountsUsedToday(){
+    return await this.downloadUriRepository.getAccountsUsedToday();
   }
 
 }
