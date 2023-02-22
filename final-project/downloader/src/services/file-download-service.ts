@@ -6,6 +6,7 @@ import { FileDownloadInfo } from "../utils/types";
 import logger from "jet-logger";
 import DownloadUriService from "./download-uri-service";
 import DownloadUri from "../entities/download-uri";
+import MQService from "./rabbitmq-service";
 
 export default class FileDownloadService {
   private fileDownloadRepository: FileDownloadRepository;
@@ -113,7 +114,6 @@ export default class FileDownloadService {
         (it) => it.accountId === account.accountId
       );
       if (!acc) {
-        console.log("hello");
         accountId = account.accountId;
         allAccountsUsedToday = false;
         break;
@@ -135,6 +135,7 @@ export default class FileDownloadService {
     const newId = await this.downloadUriService.create(downloadUri);
 
     downloadUri.id = newId;
+    await this.downloadUriService.getFilesReport();
     return { downloadLink: downloadUri.uri, timestamp: downloadUri.date };
   }
 

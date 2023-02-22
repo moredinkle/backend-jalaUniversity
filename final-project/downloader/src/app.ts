@@ -13,6 +13,7 @@ async function startServer() {
   await AppDataSource.initialize();
   await MQService.getInstance().connect();
   MQService.getInstance().consumeMessage(MQService.getInstance().downloader_channel, "UPLOADER-DOWNLOADER", "drive.*.*");
+  MQService.getInstance().consumeMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.*.*");
 
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(bodyParser.json());

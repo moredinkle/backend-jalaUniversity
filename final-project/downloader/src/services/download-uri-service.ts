@@ -3,6 +3,7 @@ import DownloadUriRepository from "../database/repositories/download-uri-reposit
 import DownloadUri from "../entities/download-uri";
 import HttpError from '../utils/http-error';
 import logger from 'jet-logger';
+import MQService from "./rabbitmq-service";
 
 export default class DownloadUriService {
   private downloadUriRepository: DownloadUriRepository;
@@ -61,10 +62,6 @@ export default class DownloadUriService {
 
   async balanceLoad(): Promise<string | undefined> {
     const accountNumbers = await this.downloadUriRepository.getDownloadNumbers();
-    // if(!accountNumbers.length) {
-    //   return undefined;
-    // }
-
     const lastDownloads = await this.downloadUriRepository.getLastDownloads(2);
 
     let accountForDownload = accountNumbers[0].accountId;
@@ -76,6 +73,12 @@ export default class DownloadUriService {
 
   async getAccountsUsedToday(){
     return await this.downloadUriRepository.getAccountsUsedToday();
+  }
+
+  
+  async getFilesReport(){
+    const files = await this.readAll();
+    MQService.getInstance().publishMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.files.report", files);
   }
 
 }

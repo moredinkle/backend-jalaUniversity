@@ -1,4 +1,4 @@
-export type Exchange =  "UPLOADER" | "UPLOADER-DOWNLOADER";
+export type Exchange =  "UPLOADER-DOWNLOADER" | "STATS-DOWNLOADER";
 export type DriveDeleteCompleted = {uploaderDbId: string};
 export type DriveUploadCompleted = { data: FileDownloadInfo[] };
 export type FileDownloadInfo = {

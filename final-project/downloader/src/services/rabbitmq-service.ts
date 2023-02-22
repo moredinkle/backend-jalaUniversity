@@ -4,14 +4,20 @@ import HttpError from "../utils/http-error";
 import { DriveUploadCompleted, Exchange, DriveDeleteCompleted } from "../utils/types";
 import FileDownloadService from "./file-download-service";
 import logger from 'jet-logger';
+import DownloadUri from '../../../stats/src/utils/download-uri';
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _downloader_channel!: Channel;
+  private _downloader_stats_channel!: Channel;
   private _connection!: Connection;
   private fileDownloadService: FileDownloadService;
 
   get downloader_channel() {
     return this._downloader_channel;
+  }
+
+  get downloader_stats_channel() {
+    return this._downloader_stats_channel;
   }
 
   constructor() {
@@ -32,6 +38,7 @@ export default class MQService {
         "amqp://admin:admin@localhost:5672"
       );
       this._downloader_channel = await this._connection.createChannel();
+      this._downloader_stats_channel = await this._connection.createChannel();
       this.fileDownloadService = new FileDownloadService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
@@ -42,7 +49,7 @@ export default class MQService {
     channel: Channel,
     exchange: Exchange,
     routingKey: string,
-    message: DriveUploadCompleted | DriveDeleteCompleted
+    message: DriveUploadCompleted | DriveDeleteCompleted | DownloadUri[]
   ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
