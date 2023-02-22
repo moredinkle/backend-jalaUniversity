@@ -10,3 +10,15 @@ export type FileDownloadInfo = {
     accountId: string;
 };
 export type DownloadsNumbers = {accountId: string, bytes_downloaded: number};
+export type FileInfo = {
+    fileId: string,
+    downloads: number,
+    downloadedMB: number,
+    dailyDownloadedMB: number
+};
+export type AccountInfo = {
+    accountId: string,
+    downloads: number,
+    downloadedMB: number,
+    dailyDownloadedMB: number
+};

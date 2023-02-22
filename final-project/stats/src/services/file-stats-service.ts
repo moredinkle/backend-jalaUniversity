@@ -2,7 +2,7 @@ import DownloadUri from "../utils/download-uri";
 import { FileInfo } from "../utils/types";
 import logger from "jet-logger";
 
-export default class StatsService {
+export default class FileStatsService {
   getAllFilesInfo(files: DownloadUri[]) {
     const filesInfo = files.map((file) => {
       return this.getFileInfo(file.fileId, files);

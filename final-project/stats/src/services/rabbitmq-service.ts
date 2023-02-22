@@ -1,14 +1,16 @@
 import client, { Channel, Connection } from "amqplib";
-import StatsService from "./file-stats-service";
+import FileStatsService from "./file-stats-service";
 import logger from "jet-logger";
 import { AccountInfo, Exchange, FileInfo } from "../utils/types";
 import DownloadUri from '../utils/download-uri';
+import AccountStatsService from "./account-stats-service";
 
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _stats_channel!: Channel;
   private _connection!: Connection;
-  private statsService: StatsService;
+  private fileStatsService: FileStatsService;
+  private accountStatsService: AccountStatsService;
 
   get stats_channel() {
     return this._stats_channel;
@@ -32,7 +34,8 @@ export default class MQService {
         "amqp://admin:admin@localhost:5672"
       );
       this._stats_channel = await this._connection.createChannel();
-      this.statsService = new StatsService();
+      this.fileStatsService = new FileStatsService();
+      this.accountStatsService = new AccountStatsService();
     } catch (error) {
       logger.err(error.message);
     }
@@ -75,13 +78,12 @@ export default class MQService {
             if (data.fields.routingKey === "stats.files.report") {
               const files = JSON.parse(data.content.toString()) as DownloadUri[];
               logger.info("Starting files report");
-              this.statsService.getAllFilesInfo(files);
+              this.fileStatsService.getAllFilesInfo(files);
+            } else if (data.fields.routingKey === "stats.accounts.report") {
+              const files = JSON.parse(data.content.toString()) as DownloadUri[];
+              logger.info("Starting accounts report");
+              this.accountStatsService.getAllAccountsInfo(files);
             }
-            // } else if (data.fields.routingKey === "drive.delete.start") {
-            //   const file = JSON.parse(data.content.toString()) as FileToUpload;
-            //   logger.info("Starting drive delete");
-            //   this.fileService.setupDriveDelete(file.data);
-            // }
           }
         },
         { noAck: true }

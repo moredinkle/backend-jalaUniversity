@@ -79,6 +79,7 @@ export default class DownloadUriService {
   async getFilesReport(){
     const files = await this.readAll();
     MQService.getInstance().publishMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.files.report", files);
+    MQService.getInstance().publishMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.accounts.report", files);
   }
 
 }
