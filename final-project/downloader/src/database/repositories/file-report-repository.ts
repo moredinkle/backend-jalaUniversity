@@ -22,6 +22,12 @@ export default class FileReportRepository {
     return fileReport ? (fileReport as FileReport) : undefined;
   }
 
+  async readByFileId(fileId: string):Promise<FileReport | undefined> {
+    const repository = AppDataSource.getRepository(FileReportEntity);
+    let fileReport = await repository.findOneBy({fileId: fileId});
+    return fileReport ? (fileReport as FileReport) : undefined;
+  }
+
   async update(fileReport: FileReportEntity) {
     const repository = AppDataSource.getRepository(FileReportEntity);
     const newValues = {

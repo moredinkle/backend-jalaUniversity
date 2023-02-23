@@ -45,7 +45,7 @@ export default class MQService {
     channel: Channel,
     exchange: Exchange,
     routingKey: string,
-    message: FileInfo | AccountInfo
+    message: FileInfo[] | AccountInfo[]
   ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });

@@ -1,6 +1,7 @@
 import DownloadUri from "../utils/download-uri";
 import { FileInfo } from "../utils/types";
 import logger from "jet-logger";
+import MQService from "./rabbitmq-service";
 
 export default class FileStatsService {
   getAllFilesInfo(files: DownloadUri[]) {
@@ -9,7 +10,7 @@ export default class FileStatsService {
     });
     const report = this.filterDuplicates(filesInfo);
     logger.info(`${report.length} ${filesInfo.length}`);
-    console.log(report);
+    MQService.getInstance().publishMessage(MQService.getInstance().stats_channel, "STATS-DOWNLOADER", "stats.files.complete", report);
     return report;
   }
 

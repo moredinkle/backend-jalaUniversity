@@ -1,16 +1,25 @@
-
 import client, { Channel, Connection } from "amqplib";
 import HttpError from "../utils/http-error";
-import { DriveUploadCompleted, Exchange, DriveDeleteCompleted } from "../utils/types";
+import {
+  DriveUploadCompleted,
+  Exchange,
+  DriveDeleteCompleted,
+} from "../utils/types";
 import FileDownloadService from "./file-download-service";
-import logger from 'jet-logger';
-import DownloadUri from '../../../stats/src/utils/download-uri';
+import logger from "jet-logger";
+import DownloadUri from "../../../stats/src/utils/download-uri";
+import FileReport from "../entities/file-report";
+import FileReportService from "./file-report-service";
+import AccountReportService from "./account-report-service";
+import AccountReport from "../entities/account-report";
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _downloader_channel!: Channel;
   private _downloader_stats_channel!: Channel;
   private _connection!: Connection;
   private fileDownloadService: FileDownloadService;
+  private fileReportService: FileReportService;
+  private accountReportService: AccountReportService;
 
   get downloader_channel() {
     return this._downloader_channel;
@@ -21,12 +30,12 @@ export default class MQService {
   }
 
   constructor() {
-    if(MQService._instance){
-        logger.warn("Use get instance");
-        return;
+    if (MQService._instance) {
+      logger.warn("Use get instance");
+      return;
     }
     MQService._instance = this;
-}
+  }
 
   public static getInstance(): MQService {
     return MQService._instance;
@@ -40,6 +49,8 @@ export default class MQService {
       this._downloader_channel = await this._connection.createChannel();
       this._downloader_stats_channel = await this._connection.createChannel();
       this.fileDownloadService = new FileDownloadService();
+      this.fileReportService = new FileReportService();
+      this.accountReportService = new AccountReportService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
     }
@@ -79,18 +90,27 @@ export default class MQService {
         async (data) => {
           if (data) {
             logger.imp(data.fields.routingKey);
-            if(data.fields.routingKey === "drive.upload.complete") {
+            if (data.fields.routingKey === "drive.upload.complete") {
               const filesObj = JSON.parse(data.content.toString()) as DriveUploadCompleted;
               logger.info("Saving uploaded file data");
               filesObj.data.map(async (file) => {
                 await this.fileDownloadService.create(file);
               });
-            }
-            else if(data.fields.routingKey === "drive.delete.complete") {
+            } else if (data.fields.routingKey === "drive.delete.complete") {
               const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
               logger.info("Saving uploaded file data");
-              await this.fileDownloadService.deleteByUploaderId(file.uploaderDbId);
+              await this.fileDownloadService.deleteByUploaderId(
+                file.uploaderDbId
+              );
             }
+          } else if (data.fields.routingKey === "stats.files.complete") {
+            const reports = JSON.parse(data.content.toString()) as FileReport[];
+            logger.info("File reports received");
+            await this.fileReportService.receiveFromStats(reports);
+          } else if (data.fields.routingKey === "stats.accounts.complete") {
+            const reports = JSON.parse(data.content.toString()) as AccountReport[];
+            logger.info("Account reports received");
+            await this.accountReportService.receiveFromStats(reports);
           }
         },
         { noAck: true }

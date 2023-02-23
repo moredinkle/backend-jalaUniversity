@@ -22,6 +22,12 @@ export default class AccountReportRepository {
     return accountReport ? (accountReport as AccountReport) : undefined;
   }
 
+  async readByAccountId(accountId: string):Promise<AccountReport | undefined> {
+    const repository = AppDataSource.getRepository(AccountReportEntity);
+    let accountReport = await repository.findOneBy({accountId: accountId});
+    return accountReport ? (accountReport as AccountReport) : undefined;
+  }
+
   async update(accountReport: AccountReportEntity) {
     const repository = AppDataSource.getRepository(AccountReportEntity);
     const newValues = {
