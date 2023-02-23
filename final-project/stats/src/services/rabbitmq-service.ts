@@ -74,7 +74,7 @@ export default class MQService {
         queue,
         (data) => {
           if (data) {
-            logger.imp(data.fields.routingKey);
+            logger.imp(`Mensaje recibido en: ${data.fields.routingKey}`);
             if (data.fields.routingKey === "stats.files.report") {
               const files = JSON.parse(data.content.toString()) as DownloadUri[];
               logger.info("Starting files report");

@@ -9,9 +9,8 @@ export default class AccountStatsService {
       return this.getAccountInfo(file.accountId, files);
     });
     const report = this.filterDuplicates(accountsInfo);
-    logger.info(`${report.length} ${accountsInfo.length}`);
+    // logger.info(`${report.length} ${accountsInfo.length}`);
     MQService.getInstance().publishMessage(MQService.getInstance().stats_channel, "STATS-DOWNLOADER", "stats.accounts.complete", report);
-    console.log(report);
     return report;
   }
 

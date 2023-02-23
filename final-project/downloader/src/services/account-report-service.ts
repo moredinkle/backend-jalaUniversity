@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import AccountReportRepository from "../database/repositories/account-report-repository";
 import HttpError from "../utils/http-error";
 import AccountReport from "../entities/account-report";
@@ -14,8 +15,13 @@ export default class AccountReportService {
     return reports;
   }
 
-  async readAccountReport(accountId: string) {
-    const report = await this.accountReportRepository.readOne(accountId);
+  async readAccountReport(id: string) {
+    const report = await this.accountReportRepository.readOne(id);
+    return report;
+  }
+
+  async readByAccountId(accountId: string) {
+    const report = await this.accountReportRepository.readByAccountId(accountId);
     return report;
   }
 
@@ -26,22 +32,20 @@ export default class AccountReportService {
       );
       return newAccountReportId;
     } catch (error) {
-      throw new HttpError(400, error.message);
+      logger.err(error.message);
     }
   }
 
   async update(accountReport: AccountReport) {
     try {
-      const exisitingAccountReport = await this.readAccountReport(
-        accountReport.id
-      );
+      const exisitingAccountReport = await this.readAccountReport(accountReport.id);
       if (exisitingAccountReport) {
         await this.accountReportRepository.update(accountReport);
       } else {
-        throw new HttpError(404, "Account report not found");
+        logger.err( "Account report not found");
       }
     } catch (error) {
-      throw new HttpError(400, error.message);
+      logger.err(error.message);
     }
   }
 
@@ -50,13 +54,13 @@ export default class AccountReportService {
     if (deletedRows !== 0) {
       logger.info(`AccountReport with id:${id} deleted`);
     } else {
-      throw new HttpError(404, "File not found");
+      logger.err("File not found");
     }
   }
 
   async receiveFromStats(fileReports: AccountReport[]){
     for(const report of fileReports) {
-      const foundReport = await this.accountReportRepository.readByAccountId(report.accountId);
+      const foundReport = await this.readByAccountId(report.accountId);
       if(foundReport) {
         foundReport.downloads = report.downloads;
         foundReport.downloadedMB = report.downloadedMB;

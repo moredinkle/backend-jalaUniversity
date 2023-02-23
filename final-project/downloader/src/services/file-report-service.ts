@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import FileReportRepository from "../database/repositories/file-report-repository";
 import HttpError from "../utils/http-error";
 import FileReport from '../entities/file-report';
@@ -14,7 +15,7 @@ export default class FileReportService {
       let newFileReportId = await this.fileReportRepository.create(fileReport);
       return newFileReportId;
     } catch (error) {
-      throw new HttpError(400, error.message);
+      logger.err(error.message);
     }
   }
 
@@ -23,12 +24,21 @@ export default class FileReportService {
     return reports;
   }
 
-  async readFileReport(fileId: string) {
+  async readFileReport(id: string) {
     try {
-      const report = await this.fileReportRepository.readOne(fileId);
+      const report = await this.fileReportRepository.readOne(id);
       return report;
     } catch (error) {
-      throw new HttpError(400, error.message);
+      logger.err(error.message);
+    }
+  }
+
+  async readByFileId(fileId: string) {
+    try {
+      const report = await this.fileReportRepository.readByFileId(fileId);
+      return report;
+    } catch (error) {
+      logger.err(error.message);
     }
   }
 
@@ -38,10 +48,10 @@ export default class FileReportService {
       if (exisitingFileReport) {
         await this.fileReportRepository.update(fileReport);
       } else {
-        throw new HttpError(404, "File report not found");
+        logger.err("File report not found");
       }
     } catch (error) {
-      throw new HttpError(400, error.message);
+      logger.err(error.message);
     }
   }
 
@@ -50,13 +60,13 @@ export default class FileReportService {
     if (deletedRows !== 0) {
       logger.info(`FileReport with id:${id} deleted`);
     } else {
-      throw new HttpError(404, "File not found");
+     logger.err("File not found");
     }
   }
 
   async receiveFromStats(fileReports: FileReport[]){
     for(const report of fileReports) {
-      const foundReport = await this.fileReportRepository.readByFileId(report.fileId);
+      const foundReport = await this.readByFileId(report.fileId);
       if(foundReport) {
         foundReport.downloads = report.downloads;
         foundReport.downloadedMB = report.downloadedMB;

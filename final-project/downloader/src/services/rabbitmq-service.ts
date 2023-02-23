@@ -89,28 +89,36 @@ export default class MQService {
         queue,
         async (data) => {
           if (data) {
-            logger.imp(data.fields.routingKey);
+            logger.imp(`Mensaje recibido en: ${data.fields.routingKey}`);
             if (data.fields.routingKey === "drive.upload.complete") {
-              const filesObj = JSON.parse(data.content.toString()) as DriveUploadCompleted;
+              const filesObj = JSON.parse(
+                data.content.toString()
+              ) as DriveUploadCompleted;
               logger.info("Saving uploaded file data");
               filesObj.data.map(async (file) => {
                 await this.fileDownloadService.create(file);
               });
             } else if (data.fields.routingKey === "drive.delete.complete") {
-              const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
+              const file = JSON.parse(
+                data.content.toString()
+              ) as DriveDeleteCompleted;
               logger.info("Saving uploaded file data");
               await this.fileDownloadService.deleteByUploaderId(
                 file.uploaderDbId
               );
+            } else if (data.fields.routingKey === "stats.files.complete") {
+              const reports = JSON.parse(
+                data.content.toString()
+              ) as FileReport[];
+              logger.info("File reports received");
+              await this.fileReportService.receiveFromStats(reports);
+            } else if (data.fields.routingKey === "stats.accounts.complete") {
+              const reports = JSON.parse(
+                data.content.toString()
+              ) as AccountReport[];
+              logger.info("Account reports received");
+              await this.accountReportService.receiveFromStats(reports);
             }
-          } else if (data.fields.routingKey === "stats.files.complete") {
-            const reports = JSON.parse(data.content.toString()) as FileReport[];
-            logger.info("File reports received");
-            await this.fileReportService.receiveFromStats(reports);
-          } else if (data.fields.routingKey === "stats.accounts.complete") {
-            const reports = JSON.parse(data.content.toString()) as AccountReport[];
-            logger.info("Account reports received");
-            await this.accountReportService.receiveFromStats(reports);
           }
         },
         { noAck: true }

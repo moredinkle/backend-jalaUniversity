@@ -9,7 +9,7 @@ export default class FileStatsService {
       return this.getFileInfo(file.fileId, files);
     });
     const report = this.filterDuplicates(filesInfo);
-    logger.info(`${report.length} ${filesInfo.length}`);
+    // logger.info(`${report.length} ${filesInfo.length}`);
     MQService.getInstance().publishMessage(MQService.getInstance().stats_channel, "STATS-DOWNLOADER", "stats.files.complete", report);
     return report;
   }

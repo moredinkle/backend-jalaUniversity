@@ -8,8 +8,8 @@ export default class FileReportEntity {
   fileId: string;
   @Column()
   downloads: number;
-  @Column()
+  @Column({type: "decimal", precision: 6, scale: 2, default: 0})
   downloadedMB: number;
-  @Column()
+  @Column({type: "decimal", precision: 6, scale: 2, default: 0})
   dailyDownloadedMB: number;
 }

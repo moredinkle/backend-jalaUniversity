@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm';
 import FileDownloadEntity from './db-entities/file-download.entity';
 import DownloadUriEntity from './db-entities/download-uri.entity';
+import FileReportEntity from './db-entities/file-report.entity';
+import AccountReportEntity from './db-entities/account-report.entity';
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -11,7 +13,7 @@ export const AppDataSource = new DataSource({
     database: "downloader",
     synchronize: true,
     logging: false,
-    entities: [FileDownloadEntity, DownloadUriEntity],
+    entities: [FileDownloadEntity, DownloadUriEntity, FileReportEntity, AccountReportEntity],
     subscribers: [],
     migrations: [],
 })
