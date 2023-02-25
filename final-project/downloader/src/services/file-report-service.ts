@@ -57,11 +57,10 @@ export default class FileReportService {
     }
   }
 
-  async deleteOne(fileId: string) {
-    const report = await this.readByFileId(fileId);
-    const deletedRows = await this.fileReportRepository.deleteOne(report.id);
+  async deleteOne(id: string) {
+    const deletedRows = await this.fileReportRepository.deleteOne(id);
     if (deletedRows !== 0) {
-      logger.info(`FileReport with fileId:${fileId} deleted`);
+      logger.info(`FileReport deleted`);
     } else {
      logger.err("File not found");
     }

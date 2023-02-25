@@ -5,6 +5,7 @@ import Account from "../entities/account";
 import File from "../entities/file";
 import fs from 'fs';
 import stream from "stream";
+import logger from 'jet-logger';
 
 export default class DriveService {
   private oauth2Client: OAuth2Client;
@@ -42,7 +43,7 @@ export default class DriveService {
       });
       return response.data;
     } catch (error) {
-      throw error;
+      logger.err(error.message);
     }
   }
   
@@ -53,7 +54,7 @@ export default class DriveService {
       });
       return response.status;
     } catch (error) {
-      console.log(error.message);
+      logger.err(error.message);
     }
   }
 
@@ -73,7 +74,7 @@ export default class DriveService {
       });
       return result.data;
     } catch (error) {
-      console.log(error.message);
+      logger.err(error.message);
     }
   }
 
