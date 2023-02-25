@@ -22,3 +22,4 @@ export type AccountInfo = {
     downloadedMB: number,
     dailyDownloadedMB: number
 };
+export type AccountToDelete = {accountId: string};

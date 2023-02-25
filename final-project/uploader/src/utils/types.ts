@@ -6,6 +6,8 @@ export type RoutingKey = "drive.upload.start" | "drive.upload.complete" | "drive
 export type DriveDeleteCompleted = {uploaderDbId: string};
 export type FileToUpload = { data: File };
 export type DriveUploadCompleted = { data: FileDownloadInfo[] };
+export type AccountToDelete = {accountIndex: number};
+export type AccountToDeleteDownloader = {accountId: string};
 export type FileDownloadInfo = {
     viewLink: string;
     downloadLink: string;

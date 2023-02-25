@@ -1,6 +1,6 @@
 import client, { Channel, Connection } from "amqplib";
 import HttpError from "../utils/http-error";
-import { DriveUploadCompleted, FileToUpload, Exchange, DriveDeleteCompleted } from "../utils/types";
+import { DriveUploadCompleted, FileToUpload, Exchange, DriveDeleteCompleted, AccountToDeleteDownloader, AccountToDelete } from "../utils/types";
 import FileService from "./file-service";
 import logger from 'jet-logger';
 export default class MQService {
@@ -41,7 +41,7 @@ export default class MQService {
     channel: Channel,
     exchange: Exchange,
     routingKey: string,
-    message: FileToUpload | DriveUploadCompleted | DriveDeleteCompleted
+    message: FileToUpload | DriveUploadCompleted | DriveDeleteCompleted | AccountToDelete | AccountToDeleteDownloader
   ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
@@ -80,6 +80,11 @@ export default class MQService {
               const file = JSON.parse(data.content.toString()) as FileToUpload;
               logger.info("Starting drive delete");
               this.fileService.setupDriveDelete(file.data);
+            }
+            else if(data.fields.routingKey === "drive.account.delete") {
+              const file = JSON.parse(data.content.toString()) as AccountToDelete;
+              logger.info("Starting account delete");
+              this.fileService.deleteAccountDriveIds(file.accountIndex);
             }
           }
         },

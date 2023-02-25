@@ -58,6 +58,16 @@ export default class AccountReportService {
     }
   }
 
+  async deleteByAccountId(accountId: string) {
+    try {
+      const report = await this.readByAccountId(accountId);
+      await this.deleteOne(report.id);
+    } catch (error) {
+      logger.err(error.message);
+    }
+    
+  }
+
   async receiveFromStats(fileReports: AccountReport[]){
     for(const report of fileReports) {
       const foundReport = await this.readByAccountId(report.accountId);

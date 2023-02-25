@@ -1,10 +1,6 @@
 import client, { Channel, Connection } from "amqplib";
 import HttpError from "../utils/http-error";
-import {
-  DriveUploadCompleted,
-  Exchange,
-  DriveDeleteCompleted,
-} from "../utils/types";
+import { DriveUploadCompleted, Exchange, DriveDeleteCompleted } from "../utils/types";
 import FileDownloadService from "./file-download-service";
 import logger from "jet-logger";
 import DownloadUri from "../../../stats/src/utils/download-uri";
@@ -12,7 +8,8 @@ import FileReport from "../entities/file-report";
 import FileReportService from "./file-report-service";
 import AccountReportService from "./account-report-service";
 import AccountReport from "../entities/account-report";
-import DownloadUriService from './download-uri-service';
+import DownloadUriService from "./download-uri-service";
+import { AccountToDelete } from "../utils/types";
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _downloader_channel!: Channel;
@@ -45,9 +42,7 @@ export default class MQService {
 
   async connect() {
     try {
-      this._connection = await client.connect(
-        "amqp://admin:admin@localhost:5672"
-      );
+      this._connection = await client.connect("amqp://admin:admin@localhost:5672");
       this._downloader_channel = await this._connection.createChannel();
       this._downloader_stats_channel = await this._connection.createChannel();
       this.fileDownloadService = new FileDownloadService();
@@ -67,11 +62,7 @@ export default class MQService {
   ) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
-      channel.publish(
-        exchange,
-        routingKey,
-        Buffer.from(JSON.stringify(message))
-      );
+      channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(message)));
       logger.info(`Mensaje enviado en ruta: ${routingKey}`);
       return message;
     } catch (error) {
@@ -79,11 +70,7 @@ export default class MQService {
     }
   }
 
-  async consumeMessage(
-    channel: Channel,
-    exchange: Exchange,
-    routingKey: string
-  ) {
+  async consumeMessage(channel: Channel, exchange: Exchange, routingKey: string) {
     try {
       await channel.assertExchange(exchange, "topic", { durable: false });
       const { queue } = await channel.assertQueue("", { durable: false });
@@ -94,30 +81,34 @@ export default class MQService {
           if (data) {
             logger.imp(`Mensaje recibido en: ${data.fields.routingKey}`);
             if (data.fields.routingKey === "drive.upload.complete") {
-              const filesObj = JSON.parse(
-                data.content.toString()
-              ) as DriveUploadCompleted;
+              const filesObj = JSON.parse(data.content.toString()) as DriveUploadCompleted;
               logger.info("Saving uploaded file data");
               filesObj.data.map(async (file) => {
                 await this.fileDownloadService.create(file);
               });
-            } else if (data.fields.routingKey === "drive.delete.complete") {
+            } 
+            else if (data.fields.routingKey === "drive.delete.complete") {
               const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
-              logger.info("Deleting file");
+              logger.imp("Deleting file");
               await this.fileDownloadService.deleteByUploaderId(file.uploaderDbId);
               await this.downloadUriService.deleteByFileId(file.uploaderDbId);
               const fileReport = await this.fileReportService.readByFileId(file.uploaderDbId);
               await this.fileReportService.deleteOne(fileReport.id);
-              logger.info("Delete completed");
-
-            } else if (data.fields.routingKey === "stats.files.complete") {
+            } 
+            else if (data.fields.routingKey === "drive.account.delete") {
+              const accountId = JSON.parse(data.content.toString()) as AccountToDelete;
+              logger.imp("Deleting account");
+              await this.fileDownloadService.deleteByAccountId(accountId.accountId);
+              await this.downloadUriService.deleteByAccountId(accountId.accountId);
+              await this.accountReportService.deleteByAccountId(accountId.accountId);
+            } 
+            else if (data.fields.routingKey === "stats.files.complete") {
               const reports = JSON.parse(data.content.toString()) as FileReport[];
               logger.info("File reports received");
               await this.fileReportService.receiveFromStats(reports);
-            } else if (data.fields.routingKey === "stats.accounts.complete") {
-              const reports = JSON.parse(
-                data.content.toString()
-              ) as AccountReport[];
+            } 
+            else if (data.fields.routingKey === "stats.accounts.complete") {
+              const reports = JSON.parse(data.content.toString()) as AccountReport[];
               logger.info("Account reports received");
               await this.accountReportService.receiveFromStats(reports);
             }

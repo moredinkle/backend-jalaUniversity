@@ -52,6 +52,13 @@ export default class FileDownloadRepository {
     return rows.affected;
   }
 
+  async deleteByAccountId(accountId: string){
+    const repository = AppDataSource.getRepository(FileDownloadEntity);
+    const rows = await repository.delete({accountId: accountId});
+    logger.warn(`Deleted rows: ${rows}`);
+    return rows.affected;
+  }
+
   async getAccounts(): Promise<{accountId: string}[]> {
     const repository = AppDataSource.getRepository(FileDownloadEntity);
     const accounts = await repository.createQueryBuilder('FileDownload')

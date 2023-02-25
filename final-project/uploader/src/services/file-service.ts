@@ -26,7 +26,6 @@ export default class FileService {
     try {
       const newFileId = await this.fileRepository.create(file);
       const response = { newFileId: newFileId, fileStatus: file.status };
-      //TODO mensaje subida a drive
       await MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER", "drive.upload.start", {data: file});
       return response;
     } catch (error) {
@@ -127,5 +126,16 @@ export default class FileService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async deleteAccountDriveIds(accountIndex: number){
+    const files = await this.readAll();
+    for(const file of files){
+      const driveIds = file.driveIds.split(",");
+      driveIds.splice(accountIndex, 1);
+      file.driveIds = driveIds.toString();
+      await this.update(file);
+    }
+    logger.info("Account drive ids deleted");
   }
 }
