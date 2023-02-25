@@ -12,6 +12,7 @@ import FileReport from "../entities/file-report";
 import FileReportService from "./file-report-service";
 import AccountReportService from "./account-report-service";
 import AccountReport from "../entities/account-report";
+import DownloadUriService from './download-uri-service';
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _downloader_channel!: Channel;
@@ -20,6 +21,7 @@ export default class MQService {
   private fileDownloadService: FileDownloadService;
   private fileReportService: FileReportService;
   private accountReportService: AccountReportService;
+  private downloadUriService: DownloadUriService;
 
   get downloader_channel() {
     return this._downloader_channel;
@@ -51,6 +53,7 @@ export default class MQService {
       this.fileDownloadService = new FileDownloadService();
       this.fileReportService = new FileReportService();
       this.accountReportService = new AccountReportService();
+      this.downloadUriService = new DownloadUriService();
     } catch (error) {
       throw new HttpError(500, "Error on MQ connection");
     }
@@ -99,17 +102,16 @@ export default class MQService {
                 await this.fileDownloadService.create(file);
               });
             } else if (data.fields.routingKey === "drive.delete.complete") {
-              const file = JSON.parse(
-                data.content.toString()
-              ) as DriveDeleteCompleted;
-              logger.info("Saving uploaded file data");
-              await this.fileDownloadService.deleteByUploaderId(
-                file.uploaderDbId
-              );
+              const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
+              logger.info("Deleting file");
+              await this.fileDownloadService.deleteByUploaderId(file.uploaderDbId);
+              await this.downloadUriService.deleteByFileId(file.uploaderDbId);
+              const fileReport = await this.fileReportService.readByFileId(file.uploaderDbId);
+              await this.fileReportService.deleteOne(fileReport.id);
+              logger.info("Delete completed");
+
             } else if (data.fields.routingKey === "stats.files.complete") {
-              const reports = JSON.parse(
-                data.content.toString()
-              ) as FileReport[];
+              const reports = JSON.parse(data.content.toString()) as FileReport[];
               logger.info("File reports received");
               await this.fileReportService.receiveFromStats(reports);
             } else if (data.fields.routingKey === "stats.accounts.complete") {

@@ -33,7 +33,7 @@ export default class DownloadUriService {
 
   async readAll() {
     let DownloadUris = await this.downloadUriRepository.readAll();
-    await this.balanceLoad();
+    // await this.balanceLoad();
     return DownloadUris;
   }
 
@@ -60,6 +60,24 @@ export default class DownloadUriService {
     }
   }
 
+  async deleteByFileId(fileId: string) {
+    const deletedRows = await this.downloadUriRepository.deleteByFileId(fileId);
+    if (deletedRows !== 0) {
+      logger.info(`Downloads with fileID:${fileId} deleted`);
+    } else {
+      throw new HttpError(404, "Downloads not found");
+    }
+  }
+  
+  async deleteByAccountId(accountId: string) {
+    const deletedRows = await this.downloadUriRepository.deleteByAccountId(accountId);
+    if (deletedRows !== 0) {
+      logger.info(`Downloads with accountID:${accountId} deleted`);
+    } else {
+      throw new HttpError(404, "Downloads not found");
+    }
+  }
+
   async balanceLoad(): Promise<string | undefined> {
     const accountNumbers = await this.downloadUriRepository.getDownloadNumbers();
     const lastDownloads = await this.downloadUriRepository.getLastDownloads(2);
@@ -76,8 +94,10 @@ export default class DownloadUriService {
   }
 
   
-  async getFilesReport(){
+  async getFilesReport(accounts: { accountId: string }[]){
     const files = await this.readAll();
+    //TODO o eliminar y archivos totalmente del historial???
+    //TODO donde va lo de quitar las cuentas eliminadas ?? aqui ??
     MQService.getInstance().publishMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.files.report", files);
     MQService.getInstance().publishMessage(MQService.getInstance().downloader_stats_channel, "STATS-DOWNLOADER", "stats.accounts.report", files);
   }

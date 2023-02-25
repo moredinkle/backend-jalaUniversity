@@ -135,7 +135,7 @@ export default class FileDownloadService {
     const newId = await this.downloadUriService.create(downloadUri);
 
     downloadUri.id = newId;
-    await this.downloadUriService.getFilesReport();
+    await this.downloadUriService.getFilesReport(accounts);
     return { downloadLink: downloadUri.uri, timestamp: downloadUri.date };
   }
 

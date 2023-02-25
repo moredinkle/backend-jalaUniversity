@@ -73,6 +73,8 @@ export default class FileService {
     }
   }
 
+  //TODO continuar con delete account completo
+
   async setupDriveUpload(file: File) {
     const accounts = await this.accountService.readAll();
     const fileDriveIds = [];

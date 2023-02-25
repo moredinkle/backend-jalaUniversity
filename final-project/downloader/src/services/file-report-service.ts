@@ -3,9 +3,11 @@ import FileReportRepository from "../database/repositories/file-report-repositor
 import HttpError from "../utils/http-error";
 import FileReport from '../entities/file-report';
 import logger from "jet-logger";
+import FileDownloadService from './file-download-service';
 
 export default class FileReportService {
   private fileReportRepository: FileReportRepository;
+  private fileDownloadService: FileDownloadService;
   constructor() {
     this.fileReportRepository = new FileReportRepository();
   }
@@ -55,10 +57,11 @@ export default class FileReportService {
     }
   }
 
-  async deleteOne(id: string) {
-    const deletedRows = await this.fileReportRepository.deleteOne(id);
+  async deleteOne(fileId: string) {
+    const report = await this.readByFileId(fileId);
+    const deletedRows = await this.fileReportRepository.deleteOne(report.id);
     if (deletedRows !== 0) {
-      logger.info(`FileReport with id:${id} deleted`);
+      logger.info(`FileReport with fileId:${fileId} deleted`);
     } else {
      logger.err("File not found");
     }

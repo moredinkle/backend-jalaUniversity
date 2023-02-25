@@ -51,6 +51,20 @@ export default class DownloadUriRepository {
     return data as DownloadsNumbers[];
   }
 
+  async deleteByFileId(fileId: string) {
+    const repository = AppDataSource.getRepository(DownloadUriEntity);
+    const rows = await repository.delete({fileId: fileId});
+    logger.warn(`Deleted rows: ${rows}`);
+    return rows.affected;
+  }
+
+  async deleteByAccountId(accountId: string) {
+    const repository = AppDataSource.getRepository(DownloadUriEntity);
+    const rows = await repository.delete({accountId: accountId});
+    logger.warn(`Deleted rows: ${rows}`);
+    return rows.affected;
+  }
+
   async getLastDownloads(lastx: number) {
     const repository = AppDataSource.getRepository(DownloadUriEntity);
     const downloads = await repository
