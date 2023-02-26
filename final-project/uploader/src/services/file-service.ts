@@ -64,8 +64,6 @@ export default class FileService {
     const file = await this.readOne(id);
     const deletedRows = await this.fileRepository.deleteOne(id);
     if (deletedRows !== 0) {
-      logger.info(`File with id:${id} deleted`);
-      //TODO mensaje de rabbit para eliminar de drive
       await MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER", "drive.delete.start", {data: file});
     } else {
       throw new HttpError(404, "File not found");
@@ -128,15 +126,17 @@ export default class FileService {
     }
   }
 
-  async deleteAccountDriveIds(accountIndex: number){
+  async deleteAccountFiles(account: Account, accountIndex: number){
     const files = await this.readAll();
     for(const file of files){
       const driveIds = file.driveIds.split(",");
+      const fileToDeleteDriveId = driveIds[accountIndex];
+      await this.deleteFromDrive(fileToDeleteDriveId, account);
       driveIds.splice(accountIndex, 1);
       file.driveIds = driveIds.toString();
       await this.update(file);
     }
-    logger.info("Account drive ids deleted");
+    logger.info("Account files deleted");
   }
 
   async setupNewAccountFiles(account: Account){
@@ -152,4 +152,5 @@ export default class FileService {
     }
     MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFiles});
   }
+
 }

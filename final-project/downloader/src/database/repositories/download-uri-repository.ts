@@ -54,14 +54,12 @@ export default class DownloadUriRepository {
   async deleteByFileId(fileId: string) {
     const repository = AppDataSource.getRepository(DownloadUriEntity);
     const rows = await repository.delete({fileId: fileId});
-    logger.warn(`Deleted rows: ${rows}`);
     return rows.affected;
   }
 
   async deleteByAccountId(accountId: string) {
     const repository = AppDataSource.getRepository(DownloadUriEntity);
     const rows = await repository.delete({accountId: accountId});
-    logger.warn(`Deleted rows: ${rows}`);
     return rows.affected;
   }
 

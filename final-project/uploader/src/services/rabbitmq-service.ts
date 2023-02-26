@@ -86,9 +86,9 @@ export default class MQService {
               this.fileService.setupDriveDelete(file.data);
             } 
             else if (data.fields.routingKey === "drive.account.delete") {
-              const file = JSON.parse(data.content.toString()) as AccountToDelete;
+              const accountData = JSON.parse(data.content.toString()) as AccountToDelete;
               logger.info("Starting account delete");
-              this.fileService.deleteAccountDriveIds(file.accountIndex);
+              this.fileService.deleteAccountFiles(accountData.account, accountData.accountIndex);
             } 
             else if (data.fields.routingKey === "drive.account.create") {
               const account = JSON.parse(data.content.toString()) as Account;

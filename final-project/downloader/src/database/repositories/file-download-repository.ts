@@ -48,14 +48,12 @@ export default class FileDownloadRepository {
   async deleteByUploaderId(uploaderId: string){
     const repository = AppDataSource.getRepository(FileDownloadEntity);
     const rows = await repository.delete({uploaderId: uploaderId});
-    logger.warn(`Deleted rows: ${rows}`);
     return rows.affected;
   }
 
   async deleteByAccountId(accountId: string){
     const repository = AppDataSource.getRepository(FileDownloadEntity);
     const rows = await repository.delete({accountId: accountId});
-    logger.warn(`Deleted rows: ${rows}`);
     return rows.affected;
   }
 
