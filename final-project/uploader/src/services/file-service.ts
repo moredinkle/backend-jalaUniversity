@@ -79,7 +79,7 @@ export default class FileService {
     const fileDriveIds = [];
     const driveFilesData: FileDownloadInfo[] = [];
     for (const [index, account] of accounts.entries()) {
-      const driveFileData = await this.uploadToDrive(account, file, index);
+      const driveFileData = await this.uploadToDrive(account, file);
       fileDriveIds.push(driveFileData.driveFileId);
       driveFilesData.push(driveFileData);
     }
@@ -90,7 +90,7 @@ export default class FileService {
     MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFilesData});
   }
 
-  async uploadToDrive(account: Account, file: File, accountIndex: number): Promise<FileDownloadInfo> {
+  async uploadToDrive(account: Account, file: File): Promise<FileDownloadInfo> {
     try {
       const driveService = new DriveService(account);
       const fileFromGridFs = await this.fileRepository.getFileFromGridFS(file.filename);
@@ -137,5 +137,19 @@ export default class FileService {
       await this.update(file);
     }
     logger.info("Account drive ids deleted");
+  }
+
+  async setupNewAccountFiles(account: Account){
+    const files = await this.readAll();
+    const driveFiles: FileDownloadInfo[] = [];
+    for(const file of files) {
+      const driveData = await this.uploadToDrive(account, file);
+      let driveIds = file.driveIds.split(",");
+      driveIds.push(driveData.driveFileId);
+      file.driveIds = driveIds.toString();
+      await this.update(file);
+      driveFiles.push(driveData);
+    }
+    MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER-DOWNLOADER", "drive.upload.complete", {data: driveFiles});
   }
 }

@@ -16,6 +16,7 @@ export default class AccountService {
     try {
       let newAccountId = await this.accountRepository.create(account);
       account.id = newAccountId;
+      MQService.getInstance().publishMessage(MQService.getInstance().uploader_channel, "UPLOADER", "drive.account.create", account);
       return newAccountId;
     } catch (error) {
       throw new HttpError(400, "Bad request");

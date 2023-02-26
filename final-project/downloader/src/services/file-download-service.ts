@@ -72,27 +72,37 @@ export default class FileDownloadService {
   }
 
   async deleteOne(id: string) {
-    const deletedRows = await this.fileDownloadRepository.deleteOne(id);
-    if (deletedRows !== 0) {
-      logger.info(`FileDownload with id:${id} deleted`);
-    } else {
-      throw new HttpError(404, "File not found");
+    try {
+      const deletedRows = await this.fileDownloadRepository.deleteOne(id);
+      if (deletedRows <= 0) {
+        throw new HttpError(404, "File not found");
+      }
+    } catch (error) {
+      logger.err(error.message);
     }
   }
 
   async deleteByUploaderId(uploaderId: string) {
-    const deletedRows = await this.fileDownloadRepository.deleteByUploaderId(uploaderId);
-    if (deletedRows !== 0) {
-    } else {
-      throw new HttpError(404, "File not found");
+    try {
+      const deletedRows = await this.fileDownloadRepository.deleteByUploaderId(uploaderId);
+      if (deletedRows !== 0) {
+      } else {
+        throw new HttpError(404, "File not found");
+      }
+    } catch (error) {
+      logger.err(error.message);
     }
   }
 
   async deleteByAccountId(accountId: string) {
-    const deletedRows = await this.fileDownloadRepository.deleteByAccountId(accountId);
-    if (deletedRows !== 0) {
-    } else {
-      throw new HttpError(404, "File not found");
+    try {
+      const deletedRows = await this.fileDownloadRepository.deleteByAccountId(accountId);
+      if (deletedRows !== 0) {
+      } else {
+        throw new HttpError(404, "File not found");
+      }
+    } catch (error) {
+      logger.err(error.message);
     }
   }
 

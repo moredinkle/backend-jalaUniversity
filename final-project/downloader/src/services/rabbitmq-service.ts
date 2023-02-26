@@ -86,7 +86,7 @@ export default class MQService {
               filesObj.data.map(async (file) => {
                 await this.fileDownloadService.create(file);
               });
-            } 
+            }
             else if (data.fields.routingKey === "drive.delete.complete") {
               const file = JSON.parse(data.content.toString()) as DriveDeleteCompleted;
               logger.imp("Deleting file");
