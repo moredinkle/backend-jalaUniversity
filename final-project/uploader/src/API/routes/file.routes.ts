@@ -2,10 +2,10 @@ import multer from "multer";
 import { Router } from "express";
 import * as fileController from "../controllers/file.controller";
 import { GridFsStorage } from "multer-gridfs-storage";
-
+import env from '../../../env/index';
 
 const storage = new GridFsStorage({
-  url: "mongodb://0.0.0.0:27017/file-uploader",
+  url: `${env.MONGO_URI}/${env.MONGO_DB}`,
   file: (req, file) => {
     return new Promise((resolve) => {
       const filename = `${new Date().getTime()}_${file.originalname}`;

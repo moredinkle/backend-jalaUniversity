@@ -11,6 +11,7 @@ import {
 import FileService from "./file-service";
 import logger from "jet-logger";
 import Account from "../entities/account";
+import env from '../../env/index';
 export default class MQService {
   private static _instance: MQService = new MQService();
   private _uploader_channel!: Channel;
@@ -35,7 +36,7 @@ export default class MQService {
 
   async connect() {
     try {
-      this._connection = await client.connect("amqp://admin:admin@localhost:5672");
+      this._connection = await client.connect(env.RABBIT_URI);
       this._uploader_channel = await this._connection.createChannel();
       this.fileService = new FileService();
     } catch (error) {

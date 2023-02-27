@@ -4,6 +4,7 @@ import File from "../../entities/file";
 import mongodb from "mongodb";
 import { ObjectID, MongoClient, Db } from "mongodb";
 import HttpError from "../../../../downloader/src/utils/http-error";
+import env from '../../../env/index';
 
 export default class FileRepository {
   private client: MongoClient;
@@ -13,12 +14,12 @@ export default class FileRepository {
     this.connectToDb();
   }
 
-  async connectToDb() {
-    this.client = await mongodb.MongoClient.connect("mongodb://0.0.0.0:27017", {
+  async connectToDb() { 
+    this.client = await mongodb.MongoClient.connect(env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    this.db = this.client.db("file-uploader");
+    this.db = this.client.db(env.MONGO_DB);
   }
 
   async create(file: FileEntity) {

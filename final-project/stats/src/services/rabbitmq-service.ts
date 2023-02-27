@@ -4,6 +4,7 @@ import logger from "jet-logger";
 import { AccountInfo, Exchange, FileInfo } from "../utils/types";
 import DownloadUri from '../utils/download-uri';
 import AccountStatsService from "./account-stats-service";
+import env from '../../env/index';
 
 export default class MQService {
   private static _instance: MQService = new MQService();
@@ -30,9 +31,7 @@ export default class MQService {
 
   async connect() {
     try {
-      this._connection = await client.connect(
-        "amqp://admin:admin@localhost:5672"
-      );
+      this._connection = await client.connect(env.RABBIT_URI);
       this._stats_channel = await this._connection.createChannel();
       this.fileStatsService = new FileStatsService();
       this.accountStatsService = new AccountStatsService();
